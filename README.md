@@ -89,7 +89,7 @@ cargo clippy --workspace --all-targets
 | **1** | Architecture, workspace, window/tab/nav shell, command palette  | ✅ Done |
 | **2** | Terminal (local PTY), SSH, SFTP                                 | ✅ Done |
 | **3** | Serial ✅ · RDP ✅ · VNC ✅ · FTP ✅                            | ✅ Done |
-| **4** | Docker, Kubernetes                                              | ⏳ |
+| **4** | Docker, Kubernetes                                              | ✅ Done |
 | **5** | AI assistant, automations, plugin marketplace                   | ⏳ |
 
 ### Phase 2 detail
