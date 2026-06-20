@@ -276,8 +276,12 @@ pub fn open_docker(
     args.push(config.container.clone());
     args.push(shell_or_default(&config.shell));
 
-    let session =
-        PtySession::spawn_program(&resolve_program("docker"), &args, TerminalSize { rows, cols }, None)?;
+    let session = PtySession::spawn_program(
+        &resolve_program("docker"),
+        &args,
+        TerminalSize { rows, cols },
+        None,
+    )?;
     Ok(register_pty(app, &state, session))
 }
 
