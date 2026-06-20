@@ -51,6 +51,10 @@ impl Shell {
     }
 }
 
+// The default is platform-conditional, so it cannot be replaced with a plain
+// `#[derive(Default)]` — clippy only sees one cfg branch at a time and wrongly
+// flags it as derivable.
+#[allow(clippy::derivable_impls)]
 impl Default for Shell {
     fn default() -> Self {
         #[cfg(windows)]
