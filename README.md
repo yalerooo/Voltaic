@@ -113,9 +113,43 @@ cargo clippy --workspace --all-targets
 - **Serial** (`voltaic-serial`, on `serialport`) — COM/USB serial consoles with a
   live port picker (rescan), configurable baud rate, data bits, parity, stop bits
   and flow control. Bytes stream to the same xterm.js surface as PTYs and SSH.
-- **RDP / VNC** — pending. Unlike the byte-stream protocols above, these need a
-  graphical framebuffer rendered to a `<canvas>` plus pointer/keyboard event
-  encoding — a separate rendering subsystem from the terminal.
+- **RDP / VNC** — graphical framebuffer sessions rendered to a `<canvas>` with
+  pointer/keyboard event encoding — a separate rendering subsystem from the terminal.
+- **FTP** — classic file transfer over the same browser/upload/download UI as SFTP
+  (mkdir, delete, rename), with port 21 by default and anonymous login support.
+
+### Phase 4 detail
+
+- **Docker** — shell into a running container via the local `docker` CLI. Includes a
+  **live container picker** (`docker ps` output) so you can browse running containers
+  and click to connect, or type the container name directly. Supports `docker -H` for
+  remote daemons (SSH or TCP). Shell reuses the terminal I/O path (same as SSH).
+- **Kubernetes** — shell into a pod via `kubectl exec -it`. Includes a **live pod
+  browser** that respects your current kubeconfig context and namespace selection,
+  with pod status displayed. Container choice within a pod is optional. Supports
+  context override via CLI args.
+
+## Sidebar & session management
+
+- **Session organization** — save/load sessions grouped into folders (named or user-created).
+  Drag sessions into folders or out to root; **custom folder colors** (8 pastel presets)
+  for visual grouping. Folders can be collapsed/expanded inline, and empty folders persist.
+- **Session discovery** — inline text search (real-time filter), sort by name (A–Z),
+  recent usage, or **favorites-first**. Toggle "show favorites only" or toggle an individual
+  session as favorite (inline star button or right-click menu).
+- **SFTP file browser** — hierarchical navigation with upload/download progress bars,
+  mkdir, delete, rename, and queued parallel transfers. Shows file permissions, owner/group,
+  size, and modification date. Drag folders to a destination for bulk download.
+- **Credential security** — SSH passwords, passphrases, private keys, and RDP/VNC/FTP
+  passwords stored in the **OS keychain** (Windows Credential Manager / macOS Keychain /
+  Secret Service on Linux), **never in plaintext** SQLite or config files. Keychain toggle
+  in Settings (default on).
+- **Session import/export** — MobaXterm-compatible `.mxtsessions` (INI) format. Export
+  all sessions to a file, import from a `.mxtsessions`, preserving protocol, host, port,
+  auth method, and folder structure. Passwords excluded (keychain-backed on save).
+- **Settings modal** — Appearance (theme, accent color, blur, animations), Terminal
+  (font family/size, default shell, scrollback), Security (keychain toggle, auto-lock
+  timeout), Updates (auto-check, stable/beta channel), and About (app version & brand).
 
 ## License
 
