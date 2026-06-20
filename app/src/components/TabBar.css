@@ -1,0 +1,95 @@
+.tabbar {
+  display: flex;
+  align-items: stretch;
+  height: 40px;
+  flex: 0 0 40px;
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.tabbar__tabs {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabbar__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabbar__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0 var(--space-sm) 0 var(--space-md);
+  min-width: 140px;
+  max-width: 220px;
+  border-right: 1px solid var(--color-hairline);
+  color: var(--color-muted);
+  font: var(--nav-link);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.tabbar__tab:hover {
+  background: var(--color-surface-soft);
+  color: var(--color-body);
+}
+.tabbar__tab.is-active {
+  background: var(--color-surface-card);
+  color: var(--color-ink);
+}
+/* The active tab gets the yellow voltage as a top accent line. */
+.tabbar__tab.is-active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary);
+}
+
+.tabbar__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-muted-soft);
+  flex: 0 0 7px;
+}
+.tabbar__dot[data-kind="terminal"] {
+  background: var(--color-primary);
+}
+
+.tabbar__title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabbar__close {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  font-size: 16px;
+  line-height: 1;
+}
+.tabbar__close:hover {
+  background: var(--color-surface-elevated);
+  color: var(--color-ink);
+}
+
+.tabbar__new {
+  width: 40px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: var(--color-muted);
+}
+.tabbar__new:hover {
+  color: var(--color-primary);
+}

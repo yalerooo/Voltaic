@@ -1,0 +1,82 @@
+.titlebar {
+  height: 64px;
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 0 var(--space-md);
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.titlebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-right: var(--space-sm);
+}
+
+.titlebar__bolt {
+  color: var(--color-primary);
+  display: block;
+  flex: 0 0 auto;
+}
+
+.titlebar__wordmark {
+  font: var(--title-sm);
+  color: var(--color-ink);
+  letter-spacing: -0.2px;
+}
+
+/* Center command-palette trigger — the Raycast/Arc-style global search. */
+.titlebar__search {
+  flex: 1;
+  max-width: 520px;
+  margin: 0 auto;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 0 var(--space-sm) 0 var(--space-md);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  color: var(--color-muted);
+  font: var(--nav-link);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.titlebar__search:hover {
+  border-color: var(--color-hairline-strong);
+}
+.titlebar__search kbd {
+  font: var(--caption);
+  color: var(--color-muted);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-xs);
+  padding: 2px 6px;
+}
+
+.titlebar__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xxs);
+}
+
+.titlebar__ctl {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--color-muted);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.titlebar__ctl:hover {
+  background: var(--color-surface-card);
+  color: var(--color-ink);
+}
+.titlebar__ctl--close:hover {
+  background: var(--color-error);
+  color: var(--color-ink);
+}

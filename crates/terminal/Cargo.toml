@@ -1,0 +1,19 @@
+[package]
+name = "voltaic-terminal"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Local PTY/terminal session management (PowerShell, CMD, WSL, bash, zsh, fish)."
+
+[lints]
+workspace = true
+
+[dependencies]
+voltaic-core = { workspace = true }
+tokio = { workspace = true }
+portable-pty = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }

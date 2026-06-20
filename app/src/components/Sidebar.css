@@ -1,0 +1,1063 @@
+.sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  background: var(--color-surface-soft);
+  border-right: 1px solid var(--color-hairline);
+  overflow: hidden;
+}
+
+.sidebar__resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+  background: transparent;
+}
+
+.sidebar__resize-handle:hover,
+.sidebar__resize-handle.is-active {
+  background: var(--color-primary);
+  opacity: 0.4;
+}
+
+/* ---- Sidebar tab switcher (Sessions / Files) ---- */
+
+.sidebar__tabs {
+  display: flex;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.sidebar__tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--space-sm) var(--space-xs);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  font: var(--nav-link);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+}
+
+.sidebar__tab:hover {
+  color: var(--color-body-strong);
+}
+
+.sidebar__tab.is-active {
+  color: var(--color-ink);
+  border-bottom-color: var(--color-primary);
+}
+
+.sidebar__tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+/* ---- View container (one per tab) ---- */
+
+.sidebar__view {
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- Top action area ---- */
+
+.sidebar__top {
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--color-hairline);
+  flex: 0 0 auto;
+}
+
+.sidebar__btn-new {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: 7px var(--space-sm);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-on-primary);
+  font: var(--button);
+  cursor: pointer;
+  transition: opacity var(--dur-fast);
+}
+
+.sidebar__btn-new:hover {
+  opacity: 0.88;
+}
+
+.sidebar__btn-plus {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Quick-access toolbar — tiny icon buttons, room to grow. */
+.sidebar__quickbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin-top: var(--space-xs);
+}
+
+.sidebar__quick-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: var(--color-muted-soft);
+  cursor: pointer;
+  transition: color var(--dur-fast), background var(--dur-fast);
+}
+
+.sidebar__quick-btn:hover:not(:disabled) {
+  color: var(--color-ink);
+  background: var(--color-surface-card);
+}
+
+.sidebar__quick-btn.is-active {
+  color: var(--color-primary);
+  background: var(--color-surface-card);
+}
+
+.sidebar__quick-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Visual divider between the filter actions and import/export. */
+.sidebar__quick-sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 3px;
+  background: var(--color-hairline-strong);
+}
+
+.sidebar__search {
+  margin-top: var(--space-xs);
+  width: 100%;
+  height: 28px;
+  padding: 0 var(--space-xs);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font: var(--body-sm);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--dur-fast);
+}
+.sidebar__search:focus {
+  border-color: var(--color-primary);
+}
+.sidebar__search::placeholder {
+  color: var(--color-muted-soft);
+}
+
+.sidebar__top-msg {
+  display: block;
+  margin-top: 6px;
+  font: var(--caption);
+  font-size: 10px;
+  color: var(--color-primary);
+}
+
+/* ---- Session tree ---- */
+
+.sidebar__tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* ---- Empty state ---- */
+
+.sidebar__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+}
+
+.sidebar__empty p {
+  font: var(--body-sm);
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.sidebar__empty-cta {
+  font: var(--caption);
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity var(--dur-fast);
+}
+
+.sidebar__empty-cta:hover {
+  opacity: 0.8;
+}
+
+/* ---- Folder node ---- */
+
+.sb-folder {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-sm);
+}
+
+/* Drag-and-drop: highlight the folder a session is being dragged onto. */
+.sb-folder.is-dragover {
+  background: rgba(250, 255, 105, 0.08);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+/* Highlight the tree when dropping a session back to the root (out of a folder). */
+.sidebar__tree.is-dragover-root {
+  box-shadow: inset 0 0 0 1px var(--color-hairline-strong);
+}
+
+/* The row being dragged is dimmed in place. */
+.sb-session.is-dragging {
+  opacity: 0.4;
+}
+
+/* Floating label that follows the cursor during a drag. */
+.sb-drag-ghost {
+  position: fixed;
+  z-index: 9998;
+  pointer-events: none;
+  padding: 4px 10px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font: var(--caption);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+.sb-folder__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px var(--space-xs);
+  border-radius: var(--radius-sm);
+  background: none;
+  border: none;
+  color: var(--color-body);
+  font: var(--caption);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.sb-folder__row:hover {
+  background: var(--color-surface-card);
+  color: var(--color-ink);
+}
+
+.sb-folder__arrow {
+  font-size: 8px;
+  color: var(--color-muted-soft);
+  transition: transform var(--dur-fast);
+  flex: 0 0 auto;
+  display: inline-block;
+}
+
+.sb-folder__arrow.is-open {
+  transform: rotate(90deg);
+}
+
+.sb-folder__icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-muted);
+  flex: 0 0 auto;
+}
+
+.sb-folder__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sb-folder__count {
+  font-size: 11px;
+  color: var(--color-muted-soft);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-pill);
+  padding: 1px 6px;
+  flex: 0 0 auto;
+}
+
+.sb-folder__children {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* ---- Session row ---- */
+
+.sb-session {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-fast);
+  position: relative;
+  /* No selectable text / native drag, so our pointer-drag isn't hijacked. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+.sb-session:hover {
+  background: var(--color-surface-card);
+}
+
+.sb-session__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex: 1;
+  min-width: 0;
+  padding: 6px var(--space-xs);
+  background: none;
+  border: none;
+  color: var(--color-body);
+  font: var(--nav-link);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--dur-fast);
+  border-radius: var(--radius-sm);
+}
+
+.sb-session:hover .sb-session__main {
+  color: var(--color-ink);
+}
+
+.sb-session__main:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  color: var(--color-ink);
+}
+
+.sb-session__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 7px;
+}
+
+.sb-session__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Star toggle — accent + always visible when favourite; otherwise a faint
+   outline that appears on row hover. */
+.sb-session__star-btn {
+  opacity: 0;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 22px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--color-muted-soft);
+  cursor: pointer;
+  transition: opacity var(--dur-fast), color var(--dur-fast);
+}
+
+.sb-session:hover .sb-session__star-btn,
+.sb-session__star-btn:focus-visible {
+  opacity: 1;
+}
+
+.sb-session__star-btn:hover {
+  color: var(--color-primary);
+}
+
+.sb-session__star-btn.is-fav {
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+.sb-session__more {
+  opacity: 0;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin-right: 4px;
+  border-radius: var(--radius-xs);
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: opacity var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
+}
+
+.sb-session:hover .sb-session__more,
+.sb-session__more:focus {
+  opacity: 1;
+}
+
+.sb-session__more:hover {
+  background: var(--color-surface-elevated);
+  color: var(--color-ink);
+}
+
+.sb-session--editing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 3px var(--space-xs);
+  background: var(--color-surface-card);
+  border-radius: var(--radius-sm);
+}
+
+.sb-session__edit {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-xs);
+  color: var(--color-ink);
+  font: var(--nav-link);
+  font-size: 13px;
+  outline: none;
+}
+
+/* Inline folder rename (mirrors the session edit field). */
+.sb-folder__row--editing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px var(--space-xs);
+}
+
+.sb-folder__edit {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-xs);
+  color: var(--color-ink);
+  font: var(--caption);
+  font-weight: 600;
+  font-size: 13px;
+  outline: none;
+}
+
+/* ---- Compact SFTP browser (Files tab) ---- */
+
+.sbf {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+
+  /* Shared column grid: Name | Perms | Owner | Group | Size | Modified.
+     The header row and every entry use this template, all on one line, so each
+     value sits under its label (Windows Explorer / MobaXterm style).
+     Name grows the most when space is available. Perms has a fixed width so
+     it is always fully visible. When the sidebar is narrower than the sum of
+     the minima, the list scrolls horizontally instead of truncating. */
+  --sbf-grid: minmax(160px, 3fr) 76px minmax(55px, 0.7fr)
+    minmax(55px, 0.7fr) minmax(55px, 0.6fr) minmax(110px, 1fr);
+}
+
+.sbf__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-bottom: 1px solid var(--color-hairline);
+  flex: 0 0 auto;
+}
+
+.sbf__host {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--caption);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.sbf__actions {
+  display: flex;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.sbf__icon-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: var(--color-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.sbf__icon-btn:hover:not(:disabled) {
+  background: var(--color-surface-card);
+  color: var(--color-ink);
+}
+
+.sbf__icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.sbf__crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 1px;
+  padding: 5px var(--space-sm);
+  border-bottom: 1px solid var(--color-hairline);
+  flex: 0 0 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sbf__crumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.sbf__crumb-wrap {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.sbf__crumb-sep {
+  color: var(--color-muted-soft);
+  font-size: 11px;
+  padding: 0 1px;
+}
+
+.sbf__crumb {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+  padding: 1px 4px;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.sbf__crumb:hover {
+  background: var(--color-surface-card);
+  color: var(--color-ink);
+}
+.sbf__crumb.is-current {
+  color: var(--color-body-strong);
+  font-weight: 600;
+}
+
+.sbf__path-btn {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-left: 1px;
+}
+
+.sbf__path-input {
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-ink);
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-xs);
+}
+
+.sbf__cols {
+  display: grid;
+  grid-template-columns: var(--sbf-grid);
+  align-items: center;
+  column-gap: var(--space-xs);
+  /* Same horizontal padding as rows so the columns line up exactly. */
+  padding: 6px var(--space-xs);
+  border-bottom: 1px solid var(--color-hairline);
+  flex: 0 0 auto;
+}
+
+/* Nudge only the "Name" label past the row icon so it sits over the names. */
+.sbf__col-name {
+  padding-left: 22px;
+}
+
+/* Non-sortable header labels (Perms / Owner / Group). */
+.sbf__col-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--caption);
+  font-size: 10px;
+  color: var(--color-muted-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Sortable header keys (Name / Modified / Size). */
+.sbf__sort-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: var(--caption);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-muted-soft);
+  cursor: pointer;
+  transition: color var(--dur-fast);
+}
+
+.sbf__sort-key:hover {
+  color: var(--color-body);
+}
+
+.sbf__sort-key.is-active {
+  color: var(--color-ink);
+}
+
+.sbf__sort-arrow {
+  display: inline-block;
+  width: 8px;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--color-primary);
+}
+
+.sbf__error {
+  margin: var(--space-xs) var(--space-sm);
+  padding: var(--space-xs);
+  font: var(--body-sm);
+  font-size: 12px;
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: var(--radius-xs);
+}
+
+/* ---- Upload/download progress ---- */
+
+.sbf__transfer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-xs) var(--space-sm);
+  border-bottom: 1px solid var(--color-hairline);
+  background: var(--color-surface-soft);
+}
+
+.sbf__transfer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.sbf__transfer-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--caption);
+  font-size: 11px;
+  color: var(--color-body);
+}
+
+.sbf__transfer-pct {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+}
+
+.sbf__transfer-track {
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-elevated);
+  overflow: hidden;
+}
+
+.sbf__transfer-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  transition: width var(--dur-fast) linear;
+}
+
+.sbf__transfer-fill[data-indeterminate="true"] {
+  width: 30% !important;
+  animation: sbf-indeterminate 1.1s ease-in-out infinite;
+}
+
+@keyframes sbf-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(330%);
+  }
+}
+
+.sbf__list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-xxs) 0 var(--space-xxs) var(--space-xxs);
+  position: relative;
+}
+.sbf__list:focus {
+  outline: none;
+}
+
+.sbf__list.is-drop {
+  outline: 2px dashed var(--color-primary);
+  outline-offset: -4px;
+  background: rgba(250, 255, 105, 0.05);
+}
+
+.sbf__drop-hint {
+  position: sticky;
+  bottom: 0;
+  margin: var(--space-xs);
+  padding: var(--space-xs);
+  text-align: center;
+  font: var(--caption);
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
+.sbf__status {
+  padding: var(--space-md) var(--space-sm);
+  font: var(--body-sm);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.sbf__row {
+  display: grid;
+  grid-template-columns: var(--sbf-grid);
+  align-items: center;
+  column-gap: var(--space-xs);
+  padding: 5px 0 5px var(--space-xs);
+  border-radius: var(--radius-sm);
+  cursor: default;
+  position: relative;
+  transition: background var(--dur-fast);
+}
+
+.sbf__row:hover {
+  background: var(--color-surface-card);
+}
+
+/* Shared cell defaults: single line, truncate gracefully. */
+.sbf__cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sbf__row.is-selected {
+  background: rgba(250, 255, 105, 0.10);
+}
+.sbf__row.is-selected:hover {
+  background: rgba(250, 255, 105, 0.14);
+}
+.sbf__row.is-selected .sbf__name {
+  color: var(--color-ink);
+}
+
+/* Cut (pending move) — dimmed like Windows. */
+.sbf__row.is-cut {
+  opacity: 0.45;
+}
+
+/* Drag-to-move target folder. */
+.sbf__row.is-droptarget {
+  background: rgba(250, 255, 105, 0.16);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+/* Name cell: icon + label in the first column on the same line as the data. */
+.sbf__cell-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sbf__icon {
+  flex: 0 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sbf__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--body-sm);
+  font-size: 13px;
+  color: var(--color-body);
+}
+
+.sbf__row:hover .sbf__name {
+  color: var(--color-ink);
+}
+
+/* Metadata cells: monospace, muted, aligned under their headers. */
+.sbf__perm,
+.sbf__mtime,
+.sbf__size {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-muted-soft);
+}
+
+.sbf__perm {
+  letter-spacing: 0.4px;
+}
+
+.sbf__owner,
+.sbf__group {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+/* Download affordance — overlays the row's right edge on hover so it doesn't
+   consume a grid column or shift the metadata. */
+.sbf__dl {
+  position: absolute;
+  top: 50%;
+  right: var(--space-xs);
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-card);
+  color: var(--color-muted);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
+}
+
+.sbf__row:hover .sbf__dl {
+  opacity: 1;
+}
+
+.sbf__dl:hover {
+  background: var(--color-surface-elevated);
+  color: var(--color-primary);
+}
+
+/* ---- Inline editing (rename / new folder) ---- */
+
+.sbf__row--editing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-surface-card);
+}
+
+.sbf__edit {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-xs);
+  color: var(--color-ink);
+  font: var(--body-sm);
+  font-size: 13px;
+  outline: none;
+}
+
+/* ---- Selection summary bar ---- */
+
+.sbf__selbar {
+  flex: 0 0 auto;
+  padding: 5px var(--space-sm);
+  font: var(--caption);
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  text-align: center;
+}
+
+/* ---- Remote telemetry footer ---- */
+
+.sbf__telemetry {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  border-top: 1px solid var(--color-hairline);
+  background: var(--color-surface-soft);
+}
+
+.sbf__tel-os {
+  font: var(--caption);
+  font-weight: 600;
+  color: var(--color-body-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sbf__meter {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sbf__meter-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.sbf__meter-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--color-body);
+}
+
+.sbf__meter-detail {
+  font-size: 10px;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sbf__meter-track {
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-elevated);
+  overflow: hidden;
+}
+
+.sbf__meter-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  transition: width var(--dur-base) var(--ease-out);
+}
+.sbf__meter-fill[data-level="warn"] {
+  background: var(--color-warning);
+}
+.sbf__meter-fill[data-level="crit"] {
+  background: var(--color-error);
+}
+
+/* ---- Files-tab empty state ---- */
+
+.sbf__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+}
+
+.sbf__empty p {
+  font: var(--body-sm);
+  color: var(--color-muted);
+}
+
+.sbf__empty-hint {
+  font-size: 12px;
+  color: var(--color-muted-soft);
+  line-height: 1.5;
+}

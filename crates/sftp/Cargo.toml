@@ -1,0 +1,23 @@
+[package]
+name = "voltaic-sftp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SFTP file browser: tree, drag-and-drop, parallel transfers, folder sync/compare."
+
+[lints]
+workspace = true
+
+[dependencies]
+voltaic-core = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+russh-sftp = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

@@ -1,0 +1,89 @@
+.palette__scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+  z-index: 1000;
+  animation: palette-fade var(--dur-fast) var(--ease-out);
+}
+
+.palette {
+  width: min(640px, 92vw);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: palette-rise var(--dur-base) var(--ease-out);
+}
+
+.palette__input {
+  width: 100%;
+  height: 56px;
+  padding: 0 var(--space-lg);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-hairline);
+  color: var(--color-ink);
+  font: var(--title-md);
+  outline: none;
+}
+.palette__input::placeholder {
+  color: var(--color-muted);
+}
+
+.palette__list {
+  list-style: none;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: var(--space-xs);
+}
+
+.palette__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.palette__item.is-active {
+  background: var(--color-surface-elevated);
+}
+.palette__item.is-active .palette__title {
+  color: var(--color-ink);
+}
+/* Active row carries a thin yellow voltage marker on the left. */
+.palette__item.is-active {
+  box-shadow: inset 2px 0 0 var(--color-primary);
+}
+
+.palette__title {
+  font: var(--title-sm);
+  color: var(--color-body);
+}
+.palette__hint {
+  font: var(--caption);
+  color: var(--color-muted);
+}
+
+.palette__empty {
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--color-muted);
+  font: var(--body-sm);
+}
+
+@keyframes palette-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes palette-rise {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}

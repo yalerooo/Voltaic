@@ -1,0 +1,24 @@
+﻿[package]
+name = "voltaic-vnc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "VNC client: full client, profiles, history."
+
+[lints]
+workspace = true
+
+[dependencies]
+voltaic-core = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+vnc = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

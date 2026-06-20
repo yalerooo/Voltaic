@@ -1,0 +1,22 @@
+[package]
+name = "voltaic-ftp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "FTP client: classic file transfer, directory listing parsing, transfers."
+
+[lints]
+workspace = true
+
+[dependencies]
+voltaic-core = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+suppaftp = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

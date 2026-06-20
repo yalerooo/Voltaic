@@ -1,0 +1,13 @@
+# Normalize line endings to LF for all text so CI (fmt/build) is platform-stable.
+* text=auto eol=lf
+
+# Binary assets must never be normalized.
+*.png binary
+*.ico binary
+*.icns binary
+*.jpg binary
+*.woff2 binary
+
+# Generated lockfiles: keep but don't show in diffs by default.
+Cargo.lock linguist-generated=true
+app/pnpm-lock.yaml linguist-generated=true

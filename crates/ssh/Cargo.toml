@@ -1,0 +1,25 @@
+﻿[package]
+name = "voltaic-ssh"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SSH client: hosts, keys, agent, tunnels, port forwarding, SOCKS proxy, jump hosts."
+
+[lints]
+workspace = true
+
+[dependencies]
+voltaic-core = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+russh = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+serde_json = { workspace = true }

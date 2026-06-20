@@ -1,0 +1,26 @@
+# Rust
+/target
+**/target
+Cargo.lock.bak
+
+# Node / frontend
+node_modules
+dist
+dist-ssr
+.vite
+*.local
+
+# Tauri
+app/src-tauri/gen
+app/src-tauri/target
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Voltaic runtime data (local dev profiles, db, logs)
+/.voltaic-data
+*.log

@@ -1,0 +1,116 @@
+.connect {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--color-canvas);
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+.connect__card {
+  width: min(460px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+}
+
+.connect__title {
+  font: var(--title-lg);
+  letter-spacing: var(--tracking-title-lg);
+  color: var(--color-ink);
+}
+
+.connect__row {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.connect__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+.connect__field--grow {
+  flex: 1;
+}
+.connect__field--port {
+  width: 96px;
+}
+.connect__field > span {
+  font: var(--caption);
+  color: var(--color-muted);
+}
+
+.connect__input {
+  height: 40px;
+  padding: 0 14px;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font: var(--body-sm);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.connect__input:focus {
+  border-color: var(--color-primary);
+}
+.connect__textarea {
+  height: auto;
+  padding: 10px 14px;
+  font: var(--code);
+  resize: vertical;
+}
+
+.connect__tabs {
+  display: flex;
+  gap: var(--space-xxs);
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-md);
+  padding: 3px;
+}
+.connect__tab {
+  flex: 1;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  font: var(--nav-link);
+}
+.connect__tab.is-active {
+  background: var(--color-surface-elevated);
+  color: var(--color-ink);
+}
+
+.connect__note {
+  font: var(--body-sm);
+  color: var(--color-muted);
+}
+
+.connect__error {
+  font: var(--body-sm);
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.connect__submit {
+  height: 40px;
+  margin-top: var(--space-xs);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-md);
+  font: var(--button);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.connect__submit:hover:not(:disabled) {
+  background: var(--color-primary-active);
+}
+.connect__submit:disabled {
+  background: var(--color-primary-disabled);
+  color: var(--color-muted);
+}

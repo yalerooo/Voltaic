@@ -1,0 +1,43 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* The rounded window + canvas fill; transparency/blur is opt-in via config. */
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.app__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.app__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app__content {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+
+.app__pane {
+  position: absolute;
+  inset: 0;
+}
+
+.app__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--color-muted);
+  font: var(--body-md);
+}

@@ -1,0 +1,131 @@
+.ctxmenu {
+  position: fixed;
+  z-index: 9999;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-xxs);
+  min-width: 184px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  animation: ctxmenu-in var(--dur-fast) var(--ease-out);
+}
+
+@keyframes ctxmenu-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.ctxmenu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 7px var(--space-sm);
+  border-radius: var(--radius-xs);
+  color: var(--color-body);
+  font: var(--body-sm);
+  text-align: left;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.ctxmenu__item:hover {
+  background: var(--color-surface-card);
+  color: var(--color-ink);
+}
+
+.ctxmenu__item:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.ctxmenu__item:disabled:hover {
+  background: none;
+  color: var(--color-body);
+}
+
+.ctxmenu__item--danger {
+  color: var(--color-error);
+}
+.ctxmenu__item--danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.ctxmenu__icon {
+  flex: 0 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+}
+.ctxmenu__item:hover .ctxmenu__icon {
+  color: inherit;
+}
+
+.ctxmenu__label {
+  flex: 1;
+}
+
+.ctxmenu__sep {
+  height: 1px;
+  background: var(--color-hairline);
+  margin: var(--space-xxs) 0;
+}
+
+/* ---- Color swatch picker ---- */
+
+.ctxmenu__swatches {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px var(--space-sm);
+}
+
+.ctxmenu__swatches-label {
+  font: var(--caption);
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.ctxmenu__swatches-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ctxmenu__swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-hairline-strong);
+  cursor: pointer;
+  padding: 0;
+  transition: transform var(--dur-fast);
+}
+.ctxmenu__swatch:hover {
+  transform: scale(1.15);
+}
+.ctxmenu__swatch.is-active {
+  box-shadow: 0 0 0 2px var(--color-surface-elevated), 0 0 0 3px currentColor;
+}
+
+/* The "no color / default" swatch shows a diagonal slash on a neutral chip. */
+.ctxmenu__swatch--none {
+  background:
+    linear-gradient(
+      to top right,
+      transparent 0 44%,
+      var(--color-error) 44% 56%,
+      transparent 56%
+    ),
+    var(--color-surface-card);
+  color: var(--color-muted);
+}
+.ctxmenu__swatch--none.is-active {
+  box-shadow: 0 0 0 2px var(--color-surface-elevated), 0 0 0 3px var(--color-muted);
+}

@@ -1,0 +1,130 @@
+# Voltaic — modern, modular MobaXterm-class connection manager built in Rust.
+# Workspace root. Every protocol/domain capability lives in its own crate under
+# `crates/` and depends only on `voltaic-core`, keeping modules independent and
+# plugin-friendly. The desktop shell (Tauri 2) lives in `app/src-tauri`.
+[workspace]
+resolver = "2"
+members = [
+    "crates/core",
+    "crates/settings",
+    "crates/terminal",
+    "crates/ssh",
+    "crates/sftp",
+    "crates/ftp",
+    "crates/rdp",
+    "crates/vnc",
+    "crates/serial",
+    "crates/docker",
+    "crates/kubernetes",
+    "crates/ai",
+    "crates/workspace",
+    "crates/updater",
+    "app/src-tauri",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.82"
+authors = ["Voltaic Contributors"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yaleros/ProjectClaudio"
+
+# Centralized dependency versions so every crate stays in lockstep.
+[workspace.dependencies]
+# Internal crates
+voltaic-core = { path = "crates/core" }
+voltaic-settings = { path = "crates/settings" }
+voltaic-terminal = { path = "crates/terminal" }
+voltaic-ssh = { path = "crates/ssh" }
+voltaic-sftp = { path = "crates/sftp" }
+voltaic-ftp = { path = "crates/ftp" }
+voltaic-rdp = { path = "crates/rdp" }
+voltaic-vnc = { path = "crates/vnc" }
+voltaic-serial = { path = "crates/serial" }
+voltaic-docker = { path = "crates/docker" }
+voltaic-kubernetes = { path = "crates/kubernetes" }
+voltaic-ai = { path = "crates/ai" }
+voltaic-workspace = { path = "crates/workspace" }
+voltaic-updater = { path = "crates/updater" }
+
+# Async runtime
+tokio = { version = "1.40", features = ["full"] }
+tokio-util = "0.7"
+futures = "0.3"
+async-trait = "0.1"
+
+# Serialization / config
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# Persistence
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# Errors / logging
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "fmt"] }
+tracing-appender = "0.2"
+
+# Utilities
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+directories = "5"
+once_cell = "1"
+
+# Terminal / PTY
+portable-pty = "0.8"
+
+# Serial. Default features pull `libudev` (needs libudev-dev on Linux); disabled
+# so the workspace builds across the CI matrix without extra system packages.
+serialport = { version = "4", default-features = false }
+
+# RDP (Phase 3) — pure-Rust client via IronRDP.
+ironrdp = { version = "0.16", features = [
+    "connector",
+    "session",
+    "graphics",
+    "input",
+    "svc",
+    "pdu",
+] }
+ironrdp-async = "0.9"
+ironrdp-tokio = "0.9"
+base64 = "0.22"
+
+# VNC (Phase 3) — async RFB client.
+vnc = { package = "vnc-rs", version = "0.5" }
+
+# FTP (Phase 3) — classic FTP/FTPS. Sync client driven from blocking tasks
+# (its async feature targets async-std; we stay on tokio via spawn_blocking).
+suppaftp = "8"
+# native-tls uses schannel on Windows (no NASM, like the `ring` choice for SSH)
+# and the system OpenSSL on Linux.
+ironrdp-tls = { version = "0.2", default-features = false, features = ["native-tls"] }
+
+# SSH / SFTP. `ring` crypto backend avoids the aws-lc-rs NASM build dependency
+# on Windows; default features (which pull aws-lc-rs) are disabled.
+russh = { version = "0.54", default-features = false, features = ["ring", "flate2", "rsa"] }
+russh-sftp = "2"
+
+# Shared lint policy applied by every crate via `[lints] workspace = true`.
+[workspace.lints.rust]
+unsafe_code = "warn"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+todo = "allow"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 1

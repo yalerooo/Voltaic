@@ -1,0 +1,346 @@
+/* Settings dialog — categorized preferences (MobaXterm-style left rail). */
+
+.set-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  padding: var(--space-lg);
+}
+
+.set-card {
+  width: min(760px, 100%);
+  /* Fixed height so the dialog never grows/shrinks between sections — the
+     content pane scrolls internally instead. */
+  height: min(560px, 90vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.set-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--color-hairline);
+  flex: 0 0 auto;
+}
+
+.set-title {
+  font: var(--title-sm);
+  color: var(--color-ink);
+}
+
+.set-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  border-radius: var(--radius-xs);
+  color: var(--color-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.set-close:hover {
+  background: var(--color-surface-card);
+  color: var(--color-ink);
+}
+
+.set-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---- Left category rail ---- */
+
+.set-nav {
+  flex: 0 0 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-sm);
+  border-right: 1px solid var(--color-hairline);
+  overflow-y: auto;
+}
+
+.set-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 8px var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-muted);
+  font: var(--nav-link);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.set-nav-item:hover {
+  background: var(--color-surface-card);
+  color: var(--color-body-strong);
+}
+.set-nav-item.is-active {
+  background: var(--color-surface-card);
+  color: var(--color-ink);
+}
+
+.set-nav-icon {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+  color: var(--color-muted-soft);
+}
+.set-nav-item.is-active .set-nav-icon {
+  color: var(--color-primary);
+}
+
+/* ---- Right content pane ---- */
+
+.set-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.set-loading {
+  color: var(--color-muted);
+  font: var(--body-sm);
+}
+
+.set-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.set-group-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.set-group-label {
+  font: var(--caption);
+  font-weight: 600;
+  color: var(--color-body-strong);
+}
+
+.set-group-hint {
+  font-size: 11px;
+  color: var(--color-muted);
+  line-height: 1.4;
+}
+
+/* ---- Inputs ---- */
+
+.set-input {
+  height: 32px;
+  padding: 0 var(--space-sm);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font: var(--body-sm);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--dur-fast);
+}
+.set-input:focus {
+  border-color: var(--color-primary);
+}
+.set-input--sm {
+  width: 120px;
+}
+
+select.set-input {
+  cursor: pointer;
+}
+
+/* ---- Segmented control ---- */
+
+.set-segment {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  align-self: flex-start;
+}
+
+.set-seg-btn {
+  padding: 5px 16px;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: var(--color-muted);
+  font: var(--caption);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.set-seg-btn:hover {
+  color: var(--color-body-strong);
+}
+.set-seg-btn.is-active {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* ---- Accent swatches ---- */
+
+.set-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.set-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-hairline-strong);
+  cursor: pointer;
+  padding: 0;
+  transition: transform var(--dur-fast), border-color var(--dur-fast);
+}
+.set-swatch:hover {
+  transform: scale(1.1);
+}
+.set-swatch.is-active {
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px currentColor;
+}
+
+/* ---- Action button (import/export) ---- */
+
+.set-btn {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font: var(--button);
+  cursor: pointer;
+  transition: background var(--dur-fast), border-color var(--dur-fast);
+}
+.set-btn:hover {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary);
+}
+
+.set-session-msg {
+  font: var(--body-sm);
+  font-size: 12px;
+  color: var(--color-primary);
+}
+
+/* ---- Range slider ---- */
+
+.set-range {
+  width: 220px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* ---- Toggle row ---- */
+
+.set-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.set-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.set-switch {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-hairline-strong);
+  position: relative;
+  transition: background var(--dur-fast), border-color var(--dur-fast);
+}
+.set-switch.is-on {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.set-switch-knob {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  transition: left var(--dur-fast) var(--ease-out);
+}
+.set-switch.is-on .set-switch-knob {
+  left: 18px;
+  background: var(--color-on-primary);
+}
+
+/* ---- About ---- */
+
+.set-about {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: center;
+  margin: auto;
+  padding: var(--space-xl);
+}
+.set-about-mark {
+  color: var(--color-primary);
+  display: block;
+}
+.set-about-name {
+  font: var(--title-md);
+  color: var(--color-ink);
+}
+.set-about-text {
+  font: var(--body-sm);
+  color: var(--color-muted);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* Honor the "Animations off" preference: kill transitions/animations app-wide. */
+:root[data-animations="off"] * {
+  transition: none !important;
+  animation: none !important;
+}
