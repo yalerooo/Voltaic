@@ -11,22 +11,31 @@ import "@xterm/xterm/css/xterm.css";
 import { ipc, isTauri, onTerminalOutput } from "../lib/ipc";
 import "./TerminalView.css";
 
-const THEME = {
-  background: "#0a0a0a", // --color-canvas
-  foreground: "#cccccc", // --color-body
-  cursor: "#faff69", // --color-primary
-  cursorAccent: "#0a0a0a",
-  selectionBackground: "#faff69",
-  selectionForeground: "#0a0a0a",
-  black: "#0a0a0a",
-  brightBlack: "#5a5a5a",
-  white: "#cccccc",
-  brightWhite: "#ffffff",
-  green: "#22c55e",
-  red: "#ef4444",
-  blue: "#3b82f6",
-  yellow: "#faff69",
-};
+/** Reads the live `--color-primary` accent so the terminal follows the theme picker. */
+function accentColor(): string {
+  const v = getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim();
+  return v || "#faff69";
+}
+
+function buildTheme() {
+  const accent = accentColor();
+  return {
+    background: "#0a0a0a", // --color-canvas
+    foreground: "#cccccc", // --color-body
+    cursor: accent,
+    cursorAccent: "#0a0a0a",
+    selectionBackground: accent,
+    selectionForeground: "#0a0a0a",
+    black: "#0a0a0a",
+    brightBlack: "#5a5a5a",
+    white: "#cccccc",
+    brightWhite: "#ffffff",
+    green: "#22c55e",
+    red: "#ef4444",
+    blue: "#3b82f6",
+    yellow: accent,
+  };
+}
 
 /**
  * Terminal pane. Either opens a fresh local PTY (`shell` given) or attaches to
@@ -50,7 +59,7 @@ export function TerminalView({
       fontSize: 14,
       lineHeight: 1.2,
       cursorBlink: true,
-      theme: THEME,
+      theme: buildTheme(),
       allowProposedApi: true,
     });
     const fit = new FitAddon();
@@ -59,10 +68,18 @@ export function TerminalView({
     term.open(hostRef.current);
     fit.fit();
 
+    const onAccentChange = () => {
+      term.options.theme = buildTheme();
+    };
+    window.addEventListener("voltaic:accent-changed", onAccentChange);
+
     if (!isTauri) {
       term.writeln("\x1b[38;2;250;255;105mVoltaic\x1b[0m — terminal preview");
       term.writeln("Run inside the Tauri shell for a live session.");
-      return () => term.dispose();
+      return () => {
+        window.removeEventListener("voltaic:accent-changed", onAccentChange);
+        term.dispose();
+      };
     }
 
     // SSH sessions are opened by the connect form; local shells open here.
@@ -101,6 +118,7 @@ export function TerminalView({
     return () => {
       disposed = true;
       observer.disconnect();
+      window.removeEventListener("voltaic:accent-changed", onAccentChange);
       unlisten?.();
       // Only tear down sessions we own; attached SSH shells are closed by their
       // owning component so the connection isn't dropped on a transient remount.

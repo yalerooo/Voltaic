@@ -55,6 +55,8 @@ export function applyAccent(hex: string): void {
   root.setProperty("--color-primary-active", rgbToHex(mix(color, [0, 0, 0], 0.12)));
   // Disabled: mostly blended into the card surface so it reads as inert.
   root.setProperty("--color-primary-disabled", rgbToHex(mix(color, [26, 26, 26], 0.78)));
+  // Consumers that can't read CSS vars directly (xterm.js theme objects) listen for this.
+  window.dispatchEvent(new Event("voltaic:accent-changed"));
 }
 
 /** Toggle UI motion globally; off adds a root flag CSS uses to kill transitions. */
