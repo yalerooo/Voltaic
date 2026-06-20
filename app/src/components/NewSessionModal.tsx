@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import dockerLogo from "../assets/icons/docker.svg?raw";
+import ftpLogo from "../assets/icons/ftp.svg?raw";
+import kubernetesLogo from "../assets/icons/kubernetes.svg?raw";
+import rdpLogo from "../assets/icons/rdp.svg?raw";
+import vncLogo from "../assets/icons/vnc.svg?raw";
 import { ipc, isTauri } from "../lib/ipc";
 import { stashSecrets } from "../lib/secrets";
 import type {
@@ -37,6 +42,16 @@ const PROTOCOLS: ProtoMeta[] = [
   { id: "kubernetes", label: "Kubernetes", description: "K8s pod shell", phase: 4, implemented: true },
 ];
 
+// Brand logos shipped as raw SVG; the wrapper just centers and lets CSS size them.
+function Logo({ svg }: { svg: string }) {
+  return (
+    <span
+      style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+}
+
 // Minimal inline SVG icons — one per protocol
 function ProtoIcon({ id }: { id: string }) {
   const props = {
@@ -73,26 +88,11 @@ function ProtoIcon({ id }: { id: string }) {
         </svg>
       );
     case "ftp":
-      return (
-        <svg {...props}>
-          <path d="M3 5h5l2 2h7v9H3V5z" />
-          <path d="M7 12h6M7 14.5h4" />
-        </svg>
-      );
+      return <Logo svg={ftpLogo} />;
     case "rdp":
-      return (
-        <svg {...props}>
-          <rect x="2" y="4" width="16" height="10" rx="2" />
-          <path d="M7 18h6M10 14v4" />
-        </svg>
-      );
+      return <Logo svg={rdpLogo} />;
     case "vnc":
-      return (
-        <svg {...props}>
-          <path d="M2 10s3-5.5 8-5.5 8 5.5 8 5.5-3 5.5-8 5.5S2 10 2 10z" />
-          <circle cx="10" cy="10" r="2.5" />
-        </svg>
-      );
+      return <Logo svg={vncLogo} />;
     case "serial":
       return (
         <svg {...props}>
@@ -101,20 +101,9 @@ function ProtoIcon({ id }: { id: string }) {
         </svg>
       );
     case "docker":
-      return (
-        <svg {...props}>
-          <path d="M10 3L17 7v6l-7 4-7-4V7l7-4z" />
-          <path d="M10 7v4M7 8.5l3 1.5 3-1.5" />
-        </svg>
-      );
+      return <Logo svg={dockerLogo} />;
     case "kubernetes":
-      return (
-        <svg {...props}>
-          <circle cx="10" cy="10" r="2.5" />
-          <circle cx="10" cy="10" r="7.5" />
-          <path d="M10 2.5v5M10 12.5v5M2.5 10h5M12.5 10h5M4.9 4.9l3.5 3.5M11.6 11.6l3.5 3.5M15.1 4.9l-3.5 3.5M8.4 11.6l-3.5 3.5" />
-        </svg>
-      );
+      return <Logo svg={kubernetesLogo} />;
     default:
       return (
         <svg {...props}>
@@ -441,9 +430,30 @@ export function NewSessionModal() {
       <div className="nsm-card" role="dialog" aria-modal="true">
         {/* Header */}
         <div className="nsm-header">
-          <span className="nsm-title">
-            {step === "pick" ? "New Session" : proto?.label ?? ""}
-          </span>
+          {step === "configure" && (
+            <button
+              className="nsm-header-back"
+              onClick={() => { setStep("pick"); setError(""); }}
+              aria-label="Back to protocols"
+            >
+              ←
+            </button>
+          )}
+          {step === "configure" && proto && (
+            <span className={`nsm-header-icon nsm-proto--${proto.id}`}>
+              <ProtoIcon id={proto.id} />
+            </span>
+          )}
+          <div className="nsm-header-text">
+            <span className="nsm-title">
+              {step === "pick" ? "New Session" : proto?.label ?? ""}
+            </span>
+            <span className="nsm-subtitle">
+              {step === "pick"
+                ? "Choose a protocol to get started"
+                : proto?.description ?? ""}
+            </span>
+          </div>
           <button className="nsm-close" onClick={close} aria-label="Close">✕</button>
         </div>
 
@@ -472,10 +482,6 @@ export function NewSessionModal() {
         {/* Step 2: configure */}
         {step === "configure" && proto && (
           <div className="nsm-form">
-            <button className="nsm-back" onClick={() => { setStep("pick"); setError(""); }}>
-              ← Back
-            </button>
-
             {isSoon ? (
               <div className="nsm-soon-msg">
                 <ProtoIcon id={proto.id} />

@@ -38,13 +38,74 @@
 .nsm-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.nsm-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
 }
 
 .nsm-title {
   font: var(--title-sm);
   color: var(--color-ink);
 }
+
+.nsm-subtitle {
+  font: var(--body-sm);
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Back arrow on the configure step. */
+.nsm-header-back {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-hairline);
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast),
+    border-color var(--dur-fast);
+}
+.nsm-header-back:hover {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-hairline-strong);
+  color: var(--color-ink);
+}
+
+/* Protocol icon chip shown beside the title on the configure step. */
+.nsm-header-icon {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+}
+.nsm-header-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.nsm-header-icon.nsm-proto--local_shell { color: var(--color-primary); }
+.nsm-header-icon.nsm-proto--ssh         { color: var(--color-success); }
+.nsm-header-icon.nsm-proto--sftp        { color: var(--color-info); }
 
 .nsm-close {
   width: 28px;
@@ -65,43 +126,65 @@
 /* Protocol grid */
 .nsm-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-xs);
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
 }
 
 .nsm-proto {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: var(--space-sm);
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-sm);
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-md);
-  text-align: left;
-  transition: border-color var(--dur-fast), background var(--dur-fast);
+  text-align: center;
+  transition: border-color var(--dur-fast), background var(--dur-fast),
+    transform var(--dur-fast);
   cursor: pointer;
   position: relative;
-  background: transparent;
+  background: var(--color-surface-soft);
 }
 
 .nsm-proto:hover {
   border-color: var(--color-primary);
-  background: rgba(250, 255, 105, 0.04);
+  background: rgba(250, 255, 105, 0.05);
+  transform: translateY(-1px);
 }
 
 .nsm-proto--soon {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .nsm-proto--soon:hover {
   border-color: var(--color-hairline-strong);
   background: var(--color-surface-soft);
+  transform: none;
 }
 
+/* Icon sits in a fixed, centered chip so mixed glyph sizes align cleanly. */
 .nsm-proto-icon {
-  color: var(--color-muted);
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-xxs);
   display: flex;
   align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  color: var(--color-muted);
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+
+.nsm-proto:hover .nsm-proto-icon {
+  border-color: var(--color-hairline-strong);
+}
+
+.nsm-proto-icon svg {
+  width: 26px;
+  height: 26px;
 }
 
 .nsm-proto--local_shell .nsm-proto-icon { color: var(--color-primary); }
@@ -140,31 +223,15 @@
   gap: var(--space-md);
 }
 
-.nsm-back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font: var(--body-sm);
-  color: var(--color-muted);
-  padding: 0;
-  width: fit-content;
-  transition: color var(--dur-fast);
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.nsm-back:hover {
-  color: var(--color-ink);
-}
-
 .nsm-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: 6px;
 }
 
 .nsm-field label {
   font: var(--caption);
+  font-weight: 500;
   color: var(--color-body);
 }
 
@@ -263,18 +330,19 @@
 
 .nsm-auth-tabs {
   display: flex;
-  gap: 2px;
+  gap: 3px;
   padding: 3px;
   background: var(--color-surface-soft);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-hairline);
 }
 
 .nsm-auth-tab {
   flex: 1;
-  padding: 5px var(--space-xs);
-  border-radius: calc(var(--radius-sm) - 2px);
+  padding: 6px var(--space-xs);
+  border-radius: var(--radius-sm);
   font: var(--caption);
+  font-weight: 500;
   color: var(--color-muted);
   transition: background var(--dur-fast), color var(--dur-fast);
   cursor: pointer;
@@ -282,8 +350,12 @@
   border: none;
 }
 
+.nsm-auth-tab:hover:not(.is-active) {
+  color: var(--color-body);
+}
+
 .nsm-auth-tab.is-active {
-  background: var(--color-surface-card);
+  background: var(--color-surface-elevated);
   color: var(--color-ink);
 }
 
@@ -299,11 +371,21 @@
 
 .nsm-note {
   font: var(--body-sm);
+  line-height: 1.55;
   color: var(--color-muted);
-  padding: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   background: var(--color-surface-soft);
-  border-radius: var(--radius-sm);
-  border-left: 2px solid var(--color-hairline-strong);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-hairline);
+}
+
+.nsm-note code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-card);
+  color: var(--color-body);
 }
 
 .nsm-soon-msg {
@@ -317,6 +399,11 @@
   background: var(--color-surface-soft);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-hairline);
+}
+
+.nsm-soon-msg svg {
+  width: 40px;
+  height: 40px;
 }
 
 .nsm-soon-msg p {
