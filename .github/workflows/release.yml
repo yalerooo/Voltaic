@@ -1,0 +1,98 @@
+name: Release
+
+# Builds native installers/bundles for Windows, Linux and macOS.
+# Trigger by pushing a version tag (e.g. `v0.1.0`) or manually via the
+# "Run workflow" button. macOS and Linux bundles can only be produced on
+# their own OS, so each target builds on its native GitHub-hosted runner.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    name: Bundle (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS universal (Apple Silicon + Intel).
+          - os: macos-latest
+            name: macOS
+            args: "--target universal-apple-darwin"
+            rust-targets: "aarch64-apple-darwin,x86_64-apple-darwin"
+          - os: ubuntu-latest
+            name: Linux
+            args: ""
+            rust-targets: ""
+          - os: windows-latest
+            name: Windows
+            args: ""
+            rust-targets: ""
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-targets }}
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+
+      # Tauri's system dependencies (Linux only).
+      - name: Install Linux WebView deps
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev \
+            librsvg2-dev patchelf libsoup-3.0-dev
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Install frontend deps
+        working-directory: app
+        run: pnpm install --frozen-lockfile
+
+      - name: Build & bundle
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: app
+          args: ${{ matrix.args }}
+          # Create/append a draft GitHub release with the bundles attached when
+          # triggered by a tag; uploads are skipped on manual dispatch.
+          tagName: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+          releaseName: ${{ startsWith(github.ref, 'refs/tags/') && format('Voltaic {0}', github.ref_name) || '' }}
+          releaseDraft: true
+          prerelease: false
+
+      # On manual runs there's no release to attach to, so publish the bundles
+      # as workflow artifacts instead.
+      - name: Upload bundles as artifacts
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: voltaic-${{ matrix.name }}
+          path: |
+            target/release/bundle/**/*
+            target/universal-apple-darwin/release/bundle/**/*
+          if-no-files-found: ignore
+          retention-days: 7
