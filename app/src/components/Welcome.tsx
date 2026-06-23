@@ -1,17 +1,20 @@
 // Welcome / home tab. A canvas-anchored hero using the design system's display
 // type and yellow stat-callouts — the brand's "voltage" moment.
 
+import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/appStore";
 import "./Welcome.css";
 
-const STATS = [
-  { value: "13", label: "Capability crates" },
-  { value: "6", label: "Local shells" },
-  { value: "9", label: "Protocols planned" },
-];
-
 export function Welcome() {
+  const { t } = useTranslation();
   const { openTab, togglePalette } = useAppStore();
+
+  const STATS = [
+    { value: "13", label: t("welcome.stat_crates") },
+    { value: "6", label: t("welcome.stat_shells") },
+    { value: "9", label: t("welcome.stat_protocols") },
+  ];
+
   return (
     <div className="welcome">
       <div className="welcome__hero">
@@ -25,28 +28,25 @@ export function Welcome() {
           >
             <path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="currentColor" />
           </svg>
-          Voltaic · alpha
+          {t("welcome.badge")}
         </span>
         <h1 className="welcome__title">
-          The modern connection
-          <br />
-          manager, built in Rust.
+          {t("welcome.title").split("\n").map((line, i) => (
+            <span key={i}>{line}{i === 0 && <br />}</span>
+          ))}
         </h1>
-        <p className="welcome__lede">
-          Terminals, SSH, SFTP, RDP, VNC, Serial, Docker and Kubernetes — one
-          fast, low-memory desktop app. Native on Windows, macOS and Linux.
-        </p>
+        <p className="welcome__lede">{t("welcome.lede")}</p>
         <div className="welcome__actions">
           <button
             className="btn btn--primary"
             onClick={() =>
-              openTab({ title: "Terminal", kind: "terminal", shell: "default" })
+              openTab({ title: t("tabbar.new_terminal"), kind: "terminal", shell: "default" })
             }
           >
-            Open a terminal
+            {t("welcome.open_terminal")}
           </button>
           <button className="btn btn--secondary" onClick={togglePalette}>
-            Command palette
+            {t("welcome.command_palette")}
           </button>
         </div>
 

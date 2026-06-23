@@ -1,10 +1,12 @@
 // Advanced tab strip across the top of the content area. New-tab button opens a
 // local terminal; tabs are closable and reflect the active selection.
 
+import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/appStore";
 import "./TabBar.css";
 
 export function TabBar() {
+  const { t } = useTranslation();
   const { tabs, activeTabId, setActiveTab, closeTab, openTab } = useAppStore();
 
   return (
@@ -28,8 +30,8 @@ export function TabBar() {
                 e.stopPropagation();
                 closeTab(tab.id);
               }}
-              aria-label="Close tab"
-              data-tooltip="Close tab"
+              aria-label={t("tabbar.close_tab")}
+              data-tooltip={t("tabbar.close_tab")}
               data-tooltip-pos="bottom"
             >
               ×
@@ -40,10 +42,10 @@ export function TabBar() {
       <button
         className="tabbar__new"
         onClick={() =>
-          openTab({ title: "Terminal", kind: "terminal", shell: "default" })
+          openTab({ title: t("tabbar.new_terminal"), kind: "terminal", shell: "default" })
         }
-        aria-label="New terminal tab"
-        data-tooltip="New terminal"
+        aria-label={t("tabbar.new_terminal")}
+        data-tooltip={t("tabbar.new_terminal")}
         data-tooltip-pos="bottom"
       >
         +

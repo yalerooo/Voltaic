@@ -52,6 +52,7 @@ export interface Appearance {
   blur_effects: boolean;
   animations: boolean;
   ui_font: string;
+  language: "en" | "es";
 }
 
 export interface TerminalConfig {

@@ -1,0 +1,159 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "rename": "Renombrar",
+    "delete": "Eliminar",
+    "refresh": "Actualizar",
+    "download": "Descargar",
+    "upload": "Subir",
+    "new_folder": "Nueva carpeta",
+    "home": "Inicio",
+    "settings": "Ajustes",
+    "search": "Buscar",
+    "loading": "Cargando…",
+    "error": "Error",
+    "confirm": "Confirmar"
+  },
+  "titlebar": {
+    "search_placeholder": "Buscar hosts, sesiones, comandos…",
+    "command_palette_tooltip": "Paleta de comandos (⌘K)",
+    "settings_tooltip": "Ajustes",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "close": "Cerrar"
+  },
+  "tabbar": {
+    "new_terminal": "Nueva terminal",
+    "close_tab": "Cerrar pestaña"
+  },
+  "sidebar": {
+    "new_session": "Nueva sesión",
+    "search_tooltip": "Buscar sesiones",
+    "favorites_tooltip": "Solo favoritos",
+    "sort_tooltip": "Ordenar sesiones",
+    "new_folder_tooltip": "Nueva carpeta",
+    "expand_all": "Expandir todas las carpetas",
+    "collapse_all": "Colapsar todas las carpetas",
+    "refresh_tooltip": "Actualizar",
+    "import_tooltip": "Importar sesiones",
+    "export_tooltip": "Exportar sesiones",
+    "filter_placeholder": "Filtrar sesiones…",
+    "folder_name_placeholder": "Nombre de carpeta",
+    "add_to_favorites": "Añadir a favoritos",
+    "remove_from_favorites": "Quitar de favoritos",
+    "more_options": "Más opciones",
+    "no_sessions": "Aún no hay sesiones guardadas.",
+    "add_first_session": "+ Añadir tu primera sesión",
+    "no_matching": "Sin sesiones coincidentes.",
+    "move_to_new_folder": "Mover a nueva carpeta…",
+    "move_to_folder": "Mover a \"{{folder}}\"",
+    "sort_name": "Nombre",
+    "sort_last_used": "Último uso",
+    "sort_protocol": "Protocolo",
+    "delete_session": "Eliminar sesión",
+    "delete_folder": "Eliminar carpeta",
+    "set_color": "Establecer color",
+    "no_color": "Sin color"
+  },
+  "welcome": {
+    "badge": "Voltaic · alfa",
+    "title": "El gestor de conexiones\nmoderno, hecho en Rust.",
+    "lede": "Terminales, SSH, SFTP, RDP, VNC, Serial, Docker y Kubernetes — una app de escritorio rápida y de bajo consumo. Nativa en Windows, macOS y Linux.",
+    "open_terminal": "Abrir terminal",
+    "command_palette": "Paleta de comandos",
+    "stat_crates": "Crates de capacidad",
+    "stat_shells": "Shells locales",
+    "stat_protocols": "Protocolos planeados"
+  },
+  "commandPalette": {
+    "placeholder": "Escribe un comando o busca…",
+    "new_terminal": "Nueva terminal",
+    "new_terminal_hint": "Abrir una shell local",
+    "new_ssh": "Nueva sesión SSH",
+    "new_ssh_hint": "Fase 2",
+    "toggle_theme_light": "Cambiar a tema claro",
+    "toggle_theme_dark": "Cambiar a tema oscuro",
+    "toggle_theme_hint": "Apariencia"
+  },
+  "settings": {
+    "sections": {
+      "appearance": "Apariencia",
+      "sessions": "Sesiones",
+      "terminal": "Terminal",
+      "security": "Seguridad",
+      "updates": "Actualizaciones",
+      "about": "Acerca de"
+    },
+    "appearance": {
+      "theme": "Tema",
+      "theme_dark": "Oscuro",
+      "theme_light": "Claro",
+      "accent": "Color de acento",
+      "opacity": "Opacidad de la ventana",
+      "animations": "Animaciones",
+      "animations_hint": "Movimiento e transiciones de la interfaz.",
+      "blur": "Efectos de desenfoque",
+      "blur_hint": "Desenfoque de fondo donde el sistema operativo lo soporta.",
+      "language": "Idioma",
+      "language_hint": "Idioma de la interfaz. Aplica de inmediato."
+    },
+    "sessions": {
+      "import": "Importar sesiones",
+      "import_hint": "Cargar sesiones desde un archivo. Las contraseñas no se incluyen.",
+      "import_btn": "Importar…",
+      "export": "Exportar sesiones",
+      "export_hint": "Guardar todas tus sesiones en un archivo (sin contraseñas).",
+      "export_btn": "Exportar…",
+      "import_success": "Importada {{count}} sesión",
+      "import_success_plural": "Importadas {{count}} sesiones",
+      "import_none": "No se encontraron sesiones en ese archivo.",
+      "export_success": "Exportada {{count}} sesión",
+      "export_success_plural": "Exportadas {{count}} sesiones"
+    },
+    "terminal": {
+      "font_family": "Familia tipográfica",
+      "font_size": "Tamaño de fuente",
+      "default_shell": "Shell por defecto",
+      "scrollback": "Historial (líneas)"
+    },
+    "security": {
+      "keychain": "Usar keychain del sistema",
+      "keychain_hint": "Almacena los secretos en el llavero del sistema en lugar del vault local.",
+      "auto_lock": "Bloqueo automático (minutos)",
+      "auto_lock_hint": "0 desactiva el bloqueo automático."
+    },
+    "updates": {
+      "auto_check": "Buscar actualizaciones automáticamente",
+      "channel": "Canal de lanzamiento",
+      "channel_stable": "Estable",
+      "channel_beta": "Beta"
+    },
+    "about": {
+      "tagline": "El gestor de conexiones moderno, hecho en Rust.",
+      "built_with": "Hecho con Tauri 2 + React"
+    }
+  },
+  "sftp": {
+    "home_tooltip": "Inicio",
+    "up_tooltip": "Subir un nivel",
+    "refresh_tooltip": "Actualizar",
+    "new_folder_tooltip": "Nueva carpeta",
+    "upload_tooltip": "Subir archivos",
+    "paste_tooltip": "Pegar \"{{name}}\"",
+    "download_tooltip": "Descargar",
+    "open_hint": "Doble clic para abrir",
+    "download_hint": "Doble clic para descargar",
+    "edit_path": "Editar ruta",
+    "copy_path": "Copiar ruta actual",
+    "sort_by": "Ordenar por {{field}}",
+    "reconnect": "Reconectar SFTP",
+    "new_session": "Nueva sesión SFTP"
+  },
+  "serial": {
+    "rescan": "Reescanear puertos"
+  }
+}

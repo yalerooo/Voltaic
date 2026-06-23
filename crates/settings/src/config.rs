@@ -36,6 +36,8 @@ pub struct Appearance {
     /// Toggles UI motion; respects reduced-motion when false.
     pub animations: bool,
     pub ui_font: String,
+    /// UI language; `"en"` or `"es"`.
+    pub language: String,
 }
 
 impl Default for Appearance {
@@ -47,6 +49,7 @@ impl Default for Appearance {
             blur_effects: true,
             animations: true,
             ui_font: "Inter".into(),
+            language: "en".into(),
         }
     }
 }

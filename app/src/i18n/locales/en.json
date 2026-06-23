@@ -1,0 +1,159 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "rename": "Rename",
+    "delete": "Delete",
+    "refresh": "Refresh",
+    "download": "Download",
+    "upload": "Upload",
+    "new_folder": "New folder",
+    "home": "Home",
+    "settings": "Settings",
+    "search": "Search",
+    "loading": "Loading…",
+    "error": "Error",
+    "confirm": "Confirm"
+  },
+  "titlebar": {
+    "search_placeholder": "Search hosts, sessions, commands…",
+    "command_palette_tooltip": "Command palette (⌘K)",
+    "settings_tooltip": "Settings",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "close": "Close"
+  },
+  "tabbar": {
+    "new_terminal": "New terminal",
+    "close_tab": "Close tab"
+  },
+  "sidebar": {
+    "new_session": "New Session",
+    "search_tooltip": "Search sessions",
+    "favorites_tooltip": "Favorites only",
+    "sort_tooltip": "Sort sessions",
+    "new_folder_tooltip": "New folder",
+    "expand_all": "Expand all folders",
+    "collapse_all": "Collapse all folders",
+    "refresh_tooltip": "Refresh",
+    "import_tooltip": "Import sessions",
+    "export_tooltip": "Export sessions",
+    "filter_placeholder": "Filter sessions…",
+    "folder_name_placeholder": "Folder name",
+    "add_to_favorites": "Add to favorites",
+    "remove_from_favorites": "Remove from favorites",
+    "more_options": "More options",
+    "no_sessions": "No saved sessions yet.",
+    "add_first_session": "+ Add your first session",
+    "no_matching": "No matching sessions.",
+    "move_to_new_folder": "Move to new folder…",
+    "move_to_folder": "Move to \"{{folder}}\"",
+    "sort_name": "Name",
+    "sort_last_used": "Last used",
+    "sort_protocol": "Protocol",
+    "delete_session": "Delete session",
+    "delete_folder": "Delete folder",
+    "set_color": "Set color",
+    "no_color": "None"
+  },
+  "welcome": {
+    "badge": "Voltaic · alpha",
+    "title": "The modern connection\nmanager, built in Rust.",
+    "lede": "Terminals, SSH, SFTP, RDP, VNC, Serial, Docker and Kubernetes — one fast, low-memory desktop app. Native on Windows, macOS and Linux.",
+    "open_terminal": "Open a terminal",
+    "command_palette": "Command palette",
+    "stat_crates": "Capability crates",
+    "stat_shells": "Local shells",
+    "stat_protocols": "Protocols planned"
+  },
+  "commandPalette": {
+    "placeholder": "Type a command or search…",
+    "new_terminal": "New terminal",
+    "new_terminal_hint": "Open a local shell",
+    "new_ssh": "New SSH session",
+    "new_ssh_hint": "Phase 2",
+    "toggle_theme_light": "Switch to light theme",
+    "toggle_theme_dark": "Switch to dark theme",
+    "toggle_theme_hint": "Appearance"
+  },
+  "settings": {
+    "sections": {
+      "appearance": "Appearance",
+      "sessions": "Sessions",
+      "terminal": "Terminal",
+      "security": "Security",
+      "updates": "Updates",
+      "about": "About"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "theme_dark": "Dark",
+      "theme_light": "Light",
+      "accent": "Accent color",
+      "opacity": "Window opacity",
+      "animations": "Animations",
+      "animations_hint": "UI motion and transitions.",
+      "blur": "Blur effects",
+      "blur_hint": "Backdrop blur where the OS supports it.",
+      "language": "Language",
+      "language_hint": "UI language. Takes effect immediately."
+    },
+    "sessions": {
+      "import": "Import sessions",
+      "import_hint": "Load sessions from a session file. Passwords are not included.",
+      "import_btn": "Import…",
+      "export": "Export sessions",
+      "export_hint": "Save all your sessions to a session file (without passwords).",
+      "export_btn": "Export…",
+      "import_success": "Imported {{count}} session",
+      "import_success_plural": "Imported {{count}} sessions",
+      "import_none": "No sessions found in that file.",
+      "export_success": "Exported {{count}} session",
+      "export_success_plural": "Exported {{count}} sessions"
+    },
+    "terminal": {
+      "font_family": "Font family",
+      "font_size": "Font size",
+      "default_shell": "Default shell",
+      "scrollback": "Scrollback (lines)"
+    },
+    "security": {
+      "keychain": "Use OS keychain",
+      "keychain_hint": "Store secrets in the system keychain instead of the local vault.",
+      "auto_lock": "Auto-lock (minutes)",
+      "auto_lock_hint": "0 disables auto-lock."
+    },
+    "updates": {
+      "auto_check": "Automatic update checks",
+      "channel": "Release channel",
+      "channel_stable": "Stable",
+      "channel_beta": "Beta"
+    },
+    "about": {
+      "tagline": "The modern connection manager, built in Rust.",
+      "built_with": "Built with Tauri 2 + React"
+    }
+  },
+  "sftp": {
+    "home_tooltip": "Home",
+    "up_tooltip": "Up one level",
+    "refresh_tooltip": "Refresh",
+    "new_folder_tooltip": "New folder",
+    "upload_tooltip": "Upload files",
+    "paste_tooltip": "Paste \"{{name}}\"",
+    "download_tooltip": "Download",
+    "open_hint": "Double-click to open",
+    "download_hint": "Double-click to download",
+    "edit_path": "Edit path",
+    "copy_path": "Copy current path",
+    "sort_by": "Sort by {{field}}",
+    "reconnect": "Reconnect SFTP",
+    "new_session": "New SFTP session"
+  },
+  "serial": {
+    "rescan": "Rescan ports"
+  }
+}

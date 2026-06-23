@@ -210,7 +210,7 @@ export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
   if (!id) {
     return (
       <SshConnectForm
-        data-tooltip={initialConfig ? "Reconnect SFTP" : "New SFTP session"} data-tooltip-pos="bottom"
+        title={initialConfig ? "Reconnect SFTP" : "New SFTP session"}
         cta="Connect"
         onConnect={connect}
         initialConfig={initialConfig}
