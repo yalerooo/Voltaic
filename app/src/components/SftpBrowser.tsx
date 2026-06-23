@@ -210,7 +210,7 @@ export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
   if (!id) {
     return (
       <SshConnectForm
-        title={initialConfig ? "Reconnect SFTP" : "New SFTP session"}
+        data-tooltip={initialConfig ? "Reconnect SFTP" : "New SFTP session"} data-tooltip-pos="bottom"
         cta="Connect"
         onConnect={connect}
         initialConfig={initialConfig}
@@ -222,25 +222,25 @@ export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
   return (
     <div className="sftp">
       <div className="sftp__toolbar">
-        <button className="sftp__btn" onClick={() => refresh(id, home)} title="Home">
+        <button className="sftp__btn" onClick={() => refresh(id, home)} data-tooltip="Home" data-tooltip-pos="bottom">
           <IconHome />
         </button>
-        <button className="sftp__btn" onClick={goUp} disabled={cwd === "/"} title="Up one level">
+        <button className="sftp__btn" onClick={goUp} disabled={cwd === "/"} data-tooltip="Up one level" data-tooltip-pos="bottom">
           <IconUp />
         </button>
-        <button className="sftp__btn" onClick={() => refresh(id, cwd)} title="Refresh">
+        <button className="sftp__btn" onClick={() => refresh(id, cwd)} data-tooltip="Refresh" data-tooltip-pos="bottom">
           <IconRefresh />
         </button>
-        <code className="sftp__path" title={cwd}>
+        <code className="sftp__path" data-tooltip={cwd} data-tooltip-pos="bottom">
           {cwd}
         </code>
         <div className="sftp__spacer" />
         {clipboard && (
-          <button className="sftp__btn" onClick={paste} disabled={busy} title={`Paste "${clipboard.name}"`}>
+          <button className="sftp__btn" onClick={paste} disabled={busy} data-tooltip={`Paste "${clipboard.name}"`} data-tooltip-pos="bottom">
             <IconPaste />
           </button>
         )}
-        <button className="sftp__btn" onClick={mkdir} disabled={busy} title="New folder">
+        <button className="sftp__btn" onClick={mkdir} disabled={busy} data-tooltip="New folder" data-tooltip-pos="bottom">
           <IconNewFolder />
         </button>
         <button className="sftp__btn sftp__btn--primary" onClick={uploadDialog} disabled={busy}>

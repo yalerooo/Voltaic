@@ -164,7 +164,7 @@ function SessionRow({
           e.stopPropagation();
           onToggleFavorite();
         }}
-        title={session.favorite ? "Remove from favorites" : "Add to favorites"}
+        data-tooltip={session.favorite ? "Remove from favorites" : "Add to favorites"}
         aria-pressed={session.favorite}
       >
         {session.favorite ? "★" : "☆"}
@@ -173,7 +173,7 @@ function SessionRow({
         ref={btnRef}
         className="sb-session__more"
         onClick={handleMenu}
-        title="More options"
+        data-tooltip="More options"
       >
         ⋮
       </button>
@@ -860,14 +860,16 @@ export function Sidebar() {
             <button
               className={`sidebar__quick-btn${searchOpen ? " is-active" : ""}`}
               onClick={() => setSearchOpen((o) => !o)}
-              title="Search sessions"
+              data-tooltip="Search sessions"
+              data-tooltip-pos="bottom"
             >
               <IconSearch size={13} />
             </button>
             <button
               className={`sidebar__quick-btn${favoritesOnly ? " is-active" : ""}`}
               onClick={() => setFavoritesOnly((v) => !v)}
-              title="Favorites only"
+              data-tooltip="Favorites only"
+              data-tooltip-pos="bottom"
             >
               <IconStar size={13} />
             </button>
@@ -877,29 +879,51 @@ export function Sidebar() {
                 const r = e.currentTarget.getBoundingClientRect();
                 openSortMenu(r.left, r.bottom + 4);
               }}
-              title="Sort sessions"
+              data-tooltip="Sort sessions"
+              data-tooltip-pos="bottom"
             >
               <IconSort size={13} />
             </button>
-            <button className="sidebar__quick-btn" onClick={newFolder} title="New folder">
+            <button
+              className="sidebar__quick-btn"
+              onClick={newFolder}
+              data-tooltip="New folder"
+              data-tooltip-pos="bottom"
+            >
               <IconNewFolder size={13} />
             </button>
             <button
               className="sidebar__quick-btn"
               onClick={toggleAllFolders}
               disabled={folders.length === 0}
-              title={allCollapsed ? "Expand all folders" : "Collapse all folders"}
+              data-tooltip={allCollapsed ? "Expand all folders" : "Collapse all folders"}
+              data-tooltip-pos="bottom"
             >
               {allCollapsed ? <IconExpand size={13} /> : <IconCollapse size={13} />}
             </button>
-            <button className="sidebar__quick-btn" onClick={() => refresh()} title="Refresh">
+            <button
+              className="sidebar__quick-btn"
+              onClick={() => refresh()}
+              data-tooltip="Refresh"
+              data-tooltip-pos="bottom"
+            >
               <IconRefresh size={13} />
             </button>
             <span className="sidebar__quick-sep" />
-            <button className="sidebar__quick-btn" onClick={doImport} title="Import sessions">
+            <button
+              className="sidebar__quick-btn"
+              onClick={doImport}
+              data-tooltip="Import sessions"
+              data-tooltip-pos="bottom"
+            >
               <IconDownload size={13} />
             </button>
-            <button className="sidebar__quick-btn" onClick={doExport} title="Export sessions">
+            <button
+              className="sidebar__quick-btn"
+              onClick={doExport}
+              data-tooltip="Export sessions"
+              data-tooltip-pos="bottom"
+            >
               <IconUpload size={13} />
             </button>
           </div>

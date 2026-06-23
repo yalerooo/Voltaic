@@ -177,7 +177,7 @@ export function SettingsModal() {
                             : ""
                         }`}
                         style={{ background: a.value, color: a.value }}
-                        title={a.label}
+                        data-tooltip={a.label}
                         aria-label={a.label}
                         onClick={() => chooseAccent(a.value)}
                       />

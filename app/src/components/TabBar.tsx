@@ -29,6 +29,8 @@ export function TabBar() {
                 closeTab(tab.id);
               }}
               aria-label="Close tab"
+              data-tooltip="Close tab"
+              data-tooltip-pos="bottom"
             >
               ×
             </button>
@@ -41,7 +43,8 @@ export function TabBar() {
           openTab({ title: "Terminal", kind: "terminal", shell: "default" })
         }
         aria-label="New terminal tab"
-        title="New terminal"
+        data-tooltip="New terminal"
+        data-tooltip-pos="bottom"
       >
         +
       </button>

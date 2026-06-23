@@ -31,7 +31,8 @@ export function TitleBar() {
       <button
         className="titlebar__search"
         onClick={togglePalette}
-        title="Command palette (Ctrl+Shift+P)"
+        data-tooltip="Command palette (⌘K)"
+        data-tooltip-pos="bottom"
       >
         <span>Search hosts, sessions, commands…</span>
         <kbd>⌘K</kbd>
@@ -42,7 +43,8 @@ export function TitleBar() {
           className="titlebar__ctl titlebar__ctl--settings"
           onClick={openSettings}
           aria-label="Settings"
-          title="Settings"
+          data-tooltip="Settings"
+          data-tooltip-pos="bottom"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
@@ -53,6 +55,8 @@ export function TitleBar() {
           className="titlebar__ctl"
           onClick={() => appWindow?.minimize()}
           aria-label="Minimize"
+          data-tooltip="Minimize"
+          data-tooltip-pos="bottom"
         >
           <Glyph d="M3 8h10" />
         </button>
@@ -60,6 +64,8 @@ export function TitleBar() {
           className="titlebar__ctl"
           onClick={() => appWindow?.toggleMaximize()}
           aria-label="Maximize"
+          data-tooltip="Maximize"
+          data-tooltip-pos="bottom"
         >
           <Glyph d="M3.5 3.5h9v9h-9z" fill="none" />
         </button>
@@ -67,6 +73,8 @@ export function TitleBar() {
           className="titlebar__ctl titlebar__ctl--close"
           onClick={() => appWindow?.close()}
           aria-label="Close"
+          data-tooltip="Close"
+          data-tooltip-pos="bottom"
         >
           <Glyph d="M4 4l8 8M12 4l-8 8" />
         </button>

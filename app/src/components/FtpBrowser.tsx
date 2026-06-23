@@ -178,20 +178,20 @@ export function FtpBrowser({ initialConfig }: { initialConfig?: FtpConfig }) {
   return (
     <div className="sftp">
       <div className="sftp__toolbar">
-        <button className="sftp__btn" onClick={() => refresh(id, home)} title="Home">
+        <button className="sftp__btn" onClick={() => refresh(id, home)} data-tooltip="Home" data-tooltip-pos="bottom">
           <IconHome />
         </button>
-        <button className="sftp__btn" onClick={goUp} disabled={cwd === "/"} title="Up one level">
+        <button className="sftp__btn" onClick={goUp} disabled={cwd === "/"} data-tooltip="Up one level" data-tooltip-pos="bottom">
           <IconUp />
         </button>
-        <button className="sftp__btn" onClick={() => refresh(id, cwd)} title="Refresh">
+        <button className="sftp__btn" onClick={() => refresh(id, cwd)} data-tooltip="Refresh" data-tooltip-pos="bottom">
           <IconRefresh />
         </button>
-        <code className="sftp__path" title={cwd}>
+        <code className="sftp__path" data-tooltip={cwd} data-tooltip-pos="bottom">
           {cwd}
         </code>
         <div className="sftp__spacer" />
-        <button className="sftp__btn" onClick={mkdir} disabled={busy} title="New folder">
+        <button className="sftp__btn" onClick={mkdir} disabled={busy} data-tooltip="New folder" data-tooltip-pos="bottom">
           <IconNewFolder />
         </button>
         <button className="sftp__btn sftp__btn--primary" onClick={uploadDialog} disabled={busy}>

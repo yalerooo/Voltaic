@@ -123,7 +123,8 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
               type="button"
               className="serial__refresh"
               onClick={refreshPorts}
-              title="Rescan ports"
+              data-tooltip="Rescan ports"
+              data-tooltip-pos="bottom"
             >
               ↻
             </button>

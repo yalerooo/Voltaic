@@ -279,7 +279,8 @@ export function SidebarFiles({
       <button
         className={`sbf__sort-key${cls ? ` ${cls}` : ""}${isActive ? " is-active" : ""}`}
         onClick={() => applySort(field)}
-        title={`Sort by ${label.toLowerCase()}`}
+        data-tooltip={`Sort by ${label.toLowerCase()}`}
+        data-tooltip-pos="bottom"
       >
         {label}
         <span className="sbf__sort-arrow">{isActive ? (sortDir === "asc" ? "↑" : "↓") : ""}</span>
@@ -672,23 +673,23 @@ export function SidebarFiles({
   return (
     <div className="sbf">
       <div className="sbf__head">
-        <span className="sbf__host" title={sessionTitle}>
+        <span className="sbf__host" data-tooltip={sessionTitle} data-tooltip-pos="bottom">
           {sessionTitle ?? "Files"}
         </span>
         <div className="sbf__actions">
-          <button className="sbf__icon-btn" onClick={() => id && refresh(id, home)} disabled={!id} title="Home">
+          <button className="sbf__icon-btn" onClick={() => id && refresh(id, home)} disabled={!id} data-tooltip="Home" data-tooltip-pos="bottom">
             <IconHome />
           </button>
-          <button className="sbf__icon-btn" onClick={goUp} disabled={!id || cwd === "/"} title="Up one level">
+          <button className="sbf__icon-btn" onClick={goUp} disabled={!id || cwd === "/"} data-tooltip="Up one level" data-tooltip-pos="bottom">
             <IconUp />
           </button>
-          <button className="sbf__icon-btn" onClick={() => id && refresh(id, cwd)} disabled={!id} title="Refresh">
+          <button className="sbf__icon-btn" onClick={() => id && refresh(id, cwd)} disabled={!id} data-tooltip="Refresh" data-tooltip-pos="bottom">
             <IconRefresh />
           </button>
-          <button className="sbf__icon-btn" onClick={startCreate} disabled={!id || busy} title="New folder">
+          <button className="sbf__icon-btn" onClick={startCreate} disabled={!id || busy} data-tooltip="New folder" data-tooltip-pos="bottom">
             <IconNewFolder />
           </button>
-          <button className="sbf__icon-btn" onClick={uploadDialog} disabled={!id || busy} title="Upload files">
+          <button className="sbf__icon-btn" onClick={uploadDialog} disabled={!id || busy} data-tooltip="Upload files" data-tooltip-pos="bottom">
             <IconUpload />
           </button>
         </div>
@@ -723,7 +724,8 @@ export function SidebarFiles({
                 <button
                   className={`sbf__crumb${i === crumbs.length - 1 ? " is-current" : ""}`}
                   onClick={() => id && refresh(id, c.path)}
-                  title={c.path}
+                  data-tooltip={c.path}
+                  data-tooltip-pos="bottom"
                 >
                   {c.label}
                 </button>
@@ -738,7 +740,8 @@ export function SidebarFiles({
             setPathEditing(true);
           }}
           disabled={!id}
-          title="Edit path"
+          data-tooltip="Edit path"
+          data-tooltip-pos="bottom"
         >
           <IconRename size={13} />
         </button>
@@ -746,7 +749,8 @@ export function SidebarFiles({
           className="sbf__icon-btn sbf__path-btn"
           onClick={() => navigator.clipboard?.writeText(cwd).catch(() => {})}
           disabled={!id}
-          title="Copy current path"
+          data-tooltip="Copy current path"
+          data-tooltip-pos="bottom"
         >
           <IconLink size={13} />
         </button>
@@ -886,21 +890,21 @@ export function SidebarFiles({
                 onClick={(e) => clickRow(entry, e)}
                 onDoubleClick={() => navigate(entry)}
                 onContextMenu={(e) => rowContext(entry, e)}
-                title={entry.kind === "dir" ? "Double-click to open" : "Double-click to download"}
+                data-tooltip={entry.kind === "dir" ? "Double-click to open" : "Double-click to download"}
               >
                 <span className="sbf__cell sbf__cell-name">
                   <span className="sbf__icon">
                     <FileIcon name={entry.name} kind={entry.kind} size={16} />
                   </span>
-                  <span className="sbf__name" title={entry.name}>{entry.name}</span>
+                  <span className="sbf__name" data-tooltip={entry.name}>{entry.name}</span>
                 </span>
-                <span className="sbf__cell sbf__perm" title={entry.permissions ?? undefined}>
+                <span className="sbf__cell sbf__perm" data-tooltip={entry.permissions ?? undefined}>
                   {entry.permissions ?? "—"}
                 </span>
-                <span className="sbf__cell sbf__owner" title={entry.owner ?? undefined}>
+                <span className="sbf__cell sbf__owner" data-tooltip={entry.owner ?? undefined}>
                   {entry.owner ?? "—"}
                 </span>
-                <span className="sbf__cell sbf__group" title={entry.group ?? undefined}>
+                <span className="sbf__cell sbf__group" data-tooltip={entry.group ?? undefined}>
                   {entry.group ?? "—"}
                 </span>
                 <span className="sbf__cell sbf__size">
@@ -916,7 +920,7 @@ export function SidebarFiles({
                       e.stopPropagation();
                       download(entry);
                     }}
-                    title="Download"
+                    data-tooltip="Download"
                   >
                     <IconDownload size={14} />
                   </button>
@@ -936,7 +940,7 @@ export function SidebarFiles({
       {telemetry && (
         <div className="sbf__telemetry">
           {telemetry.os_name && (
-            <div className="sbf__tel-os" title={telemetry.os_name}>
+            <div className="sbf__tel-os" data-tooltip={telemetry.os_name} data-tooltip-pos="bottom">
               {telemetry.os_name}
             </div>
           )}

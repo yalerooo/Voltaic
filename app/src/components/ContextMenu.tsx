@@ -80,7 +80,7 @@ export function ContextMenu({
                     key={c.value ?? "none"}
                     className={`ctxmenu__swatch${active ? " is-active" : ""}${c.value ? "" : " ctxmenu__swatch--none"}`}
                     style={c.value ? { background: c.value, color: c.value } : undefined}
-                    title={c.label}
+                    data-tooltip={c.label}
                     aria-label={c.label}
                     onClick={() => {
                       item.onPick(c.value);
