@@ -27,6 +27,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_config,
             commands::save_config,
+            commands::list_folders,
+            commands::save_folder,
+            commands::delete_folder,
+            commands::rename_folder,
             commands::list_sessions,
             commands::save_session,
             commands::delete_session,

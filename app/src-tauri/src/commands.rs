@@ -13,7 +13,7 @@ use voltaic_core::{Error, Result};
 use voltaic_ftp::{FtpClient, FtpConfig, FtpEntry};
 use voltaic_rdp::{RdpConfig, RdpEvent, RdpInput};
 use voltaic_serial::{SerialConfig, SerialPortInfo, SerialSession};
-use voltaic_settings::Config;
+use voltaic_settings::{Config, FolderRecord};
 use voltaic_sftp::{SftpClient, SftpEntry};
 use voltaic_ssh::{SshClient, SshConfig};
 use voltaic_terminal::{PtySession, Shell, TerminalSize};
@@ -65,6 +65,39 @@ pub fn save_config(state: State<'_, AppState>, config: Config) -> Result<()> {
     config.save(state.paths.config_file())?;
     *state.config.lock().expect("config lock") = config;
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Folders
+// ---------------------------------------------------------------------------
+
+#[tauri::command]
+pub async fn list_folders(state: State<'_, AppState>) -> Result<Vec<FolderRecord>> {
+    let store = state.store.lock().await;
+    store.list_folders()
+}
+
+#[tauri::command]
+pub async fn save_folder(state: State<'_, AppState>, folder: FolderRecord) -> Result<()> {
+    let store = state.store.lock().await;
+    store.upsert_folder(&folder)
+}
+
+#[tauri::command]
+pub async fn delete_folder(state: State<'_, AppState>, name: String) -> Result<()> {
+    let store = state.store.lock().await;
+    store.delete_folder(&name)
+}
+
+/// Rename a folder and update all session references in one shot.
+#[tauri::command]
+pub async fn rename_folder(
+    state: State<'_, AppState>,
+    old_name: String,
+    new_name: String,
+) -> Result<()> {
+    let store = state.store.lock().await;
+    store.rename_folder(&old_name, &new_name)
 }
 
 // ---------------------------------------------------------------------------
