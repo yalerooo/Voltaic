@@ -4,6 +4,7 @@
 // server-side copy, so copy/paste is omitted.
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { ipc } from "../lib/ipc";
 import { useFileDrop } from "../lib/useFileDrop";
@@ -18,6 +19,7 @@ const joinPath = (dir: string, name: string) => `${dir.replace(/\/$/, "")}/${nam
 const basename = (p: string) => p.split(/[/\\]/).pop() ?? p;
 
 export function FtpBrowser({ initialConfig }: { initialConfig?: FtpConfig }) {
+  const { t } = useTranslation();
   const [id, setId] = useState<string | null>(null);
   const [home, setHome] = useState("/");
   const [cwd, setCwd] = useState("/");
@@ -149,12 +151,12 @@ export function FtpBrowser({ initialConfig }: { initialConfig?: FtpConfig }) {
   const openRowMenu = (entry: FtpEntry, x: number, y: number) => {
     const items: CtxItem[] = [
       entry.kind === "dir"
-        ? { kind: "action", label: "Open", icon: <IconUp />, onClick: () => navigate(entry) }
-        : { kind: "action", label: "Download", icon: <IconDownload />, onClick: () => download(entry) },
-      { kind: "action", label: "Rename", icon: <IconRename />, onClick: () => rename(entry) },
-      { kind: "action", label: "Copy path", icon: <IconLink />, onClick: () => copyPath(entry) },
+        ? { kind: "action", label: t("ftp.open"), icon: <IconUp />, onClick: () => navigate(entry) }
+        : { kind: "action", label: t("ftp.download"), icon: <IconDownload />, onClick: () => download(entry) },
+      { kind: "action", label: t("ftp.rename"), icon: <IconRename />, onClick: () => rename(entry) },
+      { kind: "action", label: t("ftp.copy_path"), icon: <IconLink />, onClick: () => copyPath(entry) },
       { kind: "sep" },
-      { kind: "action", label: "Delete", danger: true, icon: <IconTrash />, onClick: () => remove(entry) },
+      { kind: "action", label: t("common.delete"), danger: true, icon: <IconTrash />, onClick: () => remove(entry) },
     ];
     setCtx({ x, y, items });
   };
@@ -162,7 +164,7 @@ export function FtpBrowser({ initialConfig }: { initialConfig?: FtpConfig }) {
   const isOver = useFileDrop(listRef, !!id, uploadPaths);
 
   if (connecting) {
-    return <div className="sftp__connecting">Connecting…</div>;
+    return <div className="sftp__connecting">{t("form.connecting")}</div>;
   }
 
   if (!id) {
@@ -178,25 +180,25 @@ export function FtpBrowser({ initialConfig }: { initialConfig?: FtpConfig }) {
   return (
     <div className="sftp">
       <div className="sftp__toolbar">
-        <button className="sftp__btn" onClick={() => refresh(id, home)} data-tooltip="Home" data-tooltip-pos="bottom">
+        <button className="sftp__btn" onClick={() => refresh(id, home)} data-tooltip={t("sftp.home_tooltip")} data-tooltip-pos="bottom">
           <IconHome />
         </button>
-        <button className="sftp__btn" onClick={goUp} disabled={cwd === "/"} data-tooltip="Up one level" data-tooltip-pos="bottom">
+        <button className="sftp__btn" onClick={goUp} disabled={cwd === "/"} data-tooltip={t("sftp.up_tooltip")} data-tooltip-pos="bottom">
           <IconUp />
         </button>
-        <button className="sftp__btn" onClick={() => refresh(id, cwd)} data-tooltip="Refresh" data-tooltip-pos="bottom">
+        <button className="sftp__btn" onClick={() => refresh(id, cwd)} data-tooltip={t("sftp.refresh_tooltip")} data-tooltip-pos="bottom">
           <IconRefresh />
         </button>
         <code className="sftp__path" data-tooltip={cwd} data-tooltip-pos="bottom">
           {cwd}
         </code>
         <div className="sftp__spacer" />
-        <button className="sftp__btn" onClick={mkdir} disabled={busy} data-tooltip="New folder" data-tooltip-pos="bottom">
+        <button className="sftp__btn" onClick={mkdir} disabled={busy} data-tooltip={t("sftp.new_folder_tooltip")} data-tooltip-pos="bottom">
           <IconNewFolder />
         </button>
         <button className="sftp__btn sftp__btn--primary" onClick={uploadDialog} disabled={busy}>
           <IconUpload size={15} />
-          Upload
+          {t("common.upload")}
         </button>
       </div>
 
@@ -204,8 +206,8 @@ export function FtpBrowser({ initialConfig }: { initialConfig?: FtpConfig }) {
 
       <div ref={listRef} className={`sftp__list${isOver ? " is-drop" : ""}`}>
         <div className="sftp__head">
-          <span>Name</span>
-          <span>Size</span>
+          <span>{t("ftp.col_name")}</span>
+          <span>{t("ftp.col_size")}</span>
           <span />
         </div>
         {entries.map((entry) => (
@@ -228,18 +230,18 @@ export function FtpBrowser({ initialConfig }: { initialConfig?: FtpConfig }) {
             <span className="sftp__actions">
               {entry.kind !== "dir" && (
                 <button className="sftp__link" onClick={() => download(entry)}>
-                  Download
+                  {t("ftp.download")}
                 </button>
               )}
               <button className="sftp__link sftp__link--danger" onClick={() => remove(entry)}>
-                Delete
+                {t("common.delete")}
               </button>
             </span>
           </div>
         ))}
-        {entries.length === 0 && <p className="sftp__empty">Empty directory</p>}
+        {entries.length === 0 && <p className="sftp__empty">{t("files.empty_dir")}</p>}
 
-        {isOver && <div className="sftp__drop-hint">Drop files to upload to {cwd}</div>}
+        {isOver && <div className="sftp__drop-hint">{t("files.drop_upload")}</div>}
       </div>
 
       {ctx && <ContextMenu x={ctx.x} y={ctx.y} items={ctx.items} onClose={() => setCtx(null)} />}
@@ -256,6 +258,7 @@ function FtpConnectForm({
   error: string | null;
   onConnect: (config: FtpConfig) => void;
 }) {
+  const { t } = useTranslation();
   const [host, setHost] = useState(initialConfig?.host ?? "");
   const [port, setPort] = useState(initialConfig?.port ?? 21);
   const [username, setUsername] = useState(initialConfig?.username ?? "anonymous");
@@ -269,21 +272,21 @@ function FtpConnectForm({
   return (
     <div className="rdp-connect">
       <form className="rdp-connect__card" onSubmit={submit}>
-        <h2 className="rdp-connect__title">New FTP session</h2>
+        <h2 className="rdp-connect__title">FTP</h2>
         <div className="rdp-connect__row">
           <label className="rdp-connect__field rdp-connect__field--grow">
-            <span>Host</span>
+            <span>{t("form.host")}</span>
             <input
               className="rdp-connect__input"
               value={host}
               onChange={(e) => setHost(e.target.value)}
-              placeholder="ftp.example.com"
+              placeholder={t("form.ph_ftp_host")}
               required
               autoFocus
             />
           </label>
           <label className="rdp-connect__field rdp-connect__field--port">
-            <span>Port</span>
+            <span>{t("form.port")}</span>
             <input
               className="rdp-connect__input"
               type="number"
@@ -295,7 +298,7 @@ function FtpConnectForm({
           </label>
         </div>
         <label className="rdp-connect__field">
-          <span>Username</span>
+          <span>{t("form.username")}</span>
           <input
             className="rdp-connect__input"
             value={username}
@@ -303,7 +306,7 @@ function FtpConnectForm({
           />
         </label>
         <label className="rdp-connect__field">
-          <span>Password</span>
+          <span>{t("form.password")}</span>
           <input
             className="rdp-connect__input"
             type="password"
@@ -313,7 +316,7 @@ function FtpConnectForm({
         </label>
         {error && <p className="rdp-connect__error">{error}</p>}
         <button className="rdp-connect__submit" type="submit">
-          Connect
+          {t("common.connect")}
         </button>
       </form>
     </div>

@@ -5,12 +5,14 @@
 // to fit with CSS, so pointer coordinates are mapped back to desktop space.
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ipc, onRdpEvent } from "../lib/ipc";
 import type { RdpConfig, RdpInput } from "../lib/types";
 import { SCANCODES } from "../lib/rdpKeymap";
 import "./RdpView.css";
 
 export function RdpView({ initialConfig }: { initialConfig?: RdpConfig }) {
+  const { t } = useTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,7 +169,7 @@ export function RdpView({ initialConfig }: { initialConfig?: RdpConfig }) {
               setConnecting(false);
             }}
           >
-            Reconnect
+            {t("common.reconnect")}
           </button>
         </div>
       )}
@@ -203,6 +205,7 @@ function RdpConnectForm({
   initialConfig?: RdpConfig;
   onConnect: (config: RdpConfig) => void;
 }) {
+  const { t } = useTranslation();
   const [host, setHost] = useState(initialConfig?.host ?? "");
   const [port, setPort] = useState(initialConfig?.port ?? 3389);
   const [username, setUsername] = useState(initialConfig?.username ?? "");
@@ -227,28 +230,28 @@ function RdpConnectForm({
   };
 
   if (busy) {
-    return <div className="rdp__connecting">Connecting to {host}…</div>;
+    return <div className="rdp__connecting">{t("form.connecting_to", { host })}</div>;
   }
 
   return (
     <div className="rdp-connect">
       <form className="rdp-connect__card" onSubmit={submit}>
-        <h2 className="rdp-connect__title">New RDP session</h2>
+        <h2 className="rdp-connect__title">RDP</h2>
 
         <div className="rdp-connect__row">
           <label className="rdp-connect__field rdp-connect__field--grow">
-            <span>Host</span>
+            <span>{t("form.host")}</span>
             <input
               className="rdp-connect__input"
               value={host}
               onChange={(e) => setHost(e.target.value)}
-              placeholder="192.168.1.10"
+              placeholder={t("form.ph_ip")}
               required
               autoFocus
             />
           </label>
           <label className="rdp-connect__field rdp-connect__field--port">
-            <span>Port</span>
+            <span>{t("form.port")}</span>
             <input
               className="rdp-connect__input"
               type="number"
@@ -261,18 +264,18 @@ function RdpConnectForm({
         </div>
 
         <label className="rdp-connect__field">
-          <span>Username</span>
+          <span>{t("form.username")}</span>
           <input
             className="rdp-connect__input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Administrator"
+            placeholder={t("form.ph_admin")}
             required
           />
         </label>
 
         <label className="rdp-connect__field">
-          <span>Password</span>
+          <span>{t("form.password")}</span>
           <input
             className="rdp-connect__input"
             type="password"
@@ -283,16 +286,16 @@ function RdpConnectForm({
 
         <div className="rdp-connect__row">
           <label className="rdp-connect__field rdp-connect__field--grow">
-            <span>Domain (optional)</span>
+            <span>{t("form.domain_optional")}</span>
             <input
               className="rdp-connect__input"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
-              placeholder="WORKGROUP"
+              placeholder={t("form.ph_domain")}
             />
           </label>
           <label className="rdp-connect__field">
-            <span>Resolution</span>
+            <span>{t("form.resolution")}</span>
             <select
               className="rdp-connect__input"
               value={resolution}
@@ -310,7 +313,7 @@ function RdpConnectForm({
         {error && <p className="rdp-connect__error">{error}</p>}
 
         <button className="rdp-connect__submit" type="submit">
-          Connect
+          {t("common.connect")}
         </button>
       </form>
     </div>

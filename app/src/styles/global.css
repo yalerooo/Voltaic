@@ -123,6 +123,35 @@ input {
   transition-delay: 350ms;
 }
 
+/* Left of element — for buttons at the right edge of overflow:hidden containers */
+[data-tooltip][data-tooltip-pos="left"]::after {
+  right: calc(100% + 8px);
+  left: auto;
+  bottom: 50%;
+  transform: translateY(50%) translateX(3px);
+}
+
+[data-tooltip][data-tooltip-pos="left"]:hover::after,
+[data-tooltip][data-tooltip-pos="left"]:focus-visible::after {
+  transform: translateY(50%) translateX(0);
+  transition-delay: 350ms;
+}
+
+/* Below, right-aligned — for buttons at the right edge of the viewport */
+[data-tooltip][data-tooltip-pos="bottom-end"]::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(-3px);
+}
+
+[data-tooltip][data-tooltip-pos="bottom-end"]:hover::after,
+[data-tooltip][data-tooltip-pos="bottom-end"]:focus-visible::after {
+  transform: translateX(0) translateY(0);
+  transition-delay: 350ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

@@ -9,6 +9,7 @@
 // between the "Sessions" and "Files" sidebar tabs.
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { ipc, onTransferProgress } from "../lib/ipc";
 import { useFileDrop } from "../lib/useFileDrop";
@@ -90,6 +91,7 @@ export function SidebarFiles({
   sessionKey: string | null;
   sessionTitle?: string;
 }) {
+  const { t } = useTranslation();
   const [id, setId] = useState<string | null>(null);
   const [home, setHome] = useState("/");
   const [cwd, setCwd] = useState("/");
@@ -279,7 +281,7 @@ export function SidebarFiles({
       <button
         className={`sbf__sort-key${cls ? ` ${cls}` : ""}${isActive ? " is-active" : ""}`}
         onClick={() => applySort(field)}
-        data-tooltip={`Sort by ${label.toLowerCase()}`}
+        data-tooltip={t("files.sort_by", { field: label.toLowerCase() })}
         data-tooltip-pos="bottom"
       >
         {label}
@@ -572,17 +574,17 @@ export function SidebarFiles({
 
   const openRowMenu = (targets: SftpEntry[], x: number, y: number) => {
     const many = targets.length > 1;
-    const files = targets.filter((t) => t.kind === "file");
+    const files = targets.filter((e) => e.kind === "file");
     const pasteLabel = clipboard
       ? clipboard.mode === "cut"
-        ? `Move ${clipboard.items.length} here`
-        : `Paste ${clipboard.items.length}`
+        ? t("files.move_here", { count: clipboard.items.length })
+        : t("files.paste", { count: clipboard.items.length })
       : "";
     const items: CtxItem[] = many
       ? [
           {
             kind: "action" as const,
-            label: `Download ${targets.length} item${targets.length > 1 ? "s" : ""}`,
+            label: t("files.download_items", { count: targets.length }),
             icon: <IconDownload />,
             onClick: () => downloadMany(targets),
           },
@@ -590,19 +592,19 @@ export function SidebarFiles({
             ? [
                 {
                   kind: "action" as const,
-                  label: `Copy ${files.length}`,
+                  label: t("files.copy", { count: files.length }),
                   icon: <IconCopy />,
                   onClick: () => copyToClipboard(targets),
                 },
               ]
             : []),
-          { kind: "action", label: `Cut ${targets.length}`, icon: <IconCopy />, onClick: () => cutToClipboard(targets) },
+          { kind: "action", label: t("files.cut", { count: targets.length }), icon: <IconCopy />, onClick: () => cutToClipboard(targets) },
           ...(clipboard ? [{ kind: "action" as const, label: pasteLabel, icon: <IconPaste />, onClick: paste }] : []),
-          { kind: "action", label: "Copy paths", icon: <IconLink />, onClick: () => copyPaths(targets) },
+          { kind: "action", label: t("files.copy_paths"), icon: <IconLink />, onClick: () => copyPaths(targets) },
           { kind: "sep" },
           {
             kind: "action",
-            label: `Delete ${targets.length} items`,
+            label: t("files.delete_items", { count: targets.length }),
             danger: true,
             icon: <IconTrash />,
             onClick: () => removeMany(targets),
@@ -610,20 +612,20 @@ export function SidebarFiles({
         ]
       : [
           targets[0].kind === "dir"
-            ? { kind: "action", label: "Open", icon: <IconUp />, onClick: () => navigate(targets[0]) }
-            : { kind: "action", label: "Download", icon: <IconDownload />, onClick: () => download(targets[0]) },
+            ? { kind: "action", label: t("files.open"), icon: <IconUp />, onClick: () => navigate(targets[0]) }
+            : { kind: "action", label: t("common.download"), icon: <IconDownload />, onClick: () => download(targets[0]) },
           ...(targets[0].kind === "dir"
-            ? [{ kind: "action" as const, label: "Download folder", icon: <IconDownload />, onClick: () => download(targets[0]) }]
+            ? [{ kind: "action" as const, label: t("files.download_folder"), icon: <IconDownload />, onClick: () => download(targets[0]) }]
             : []),
-          { kind: "action", label: "Rename", icon: <IconRename />, onClick: () => startRename(targets[0]) },
+          { kind: "action", label: t("common.rename"), icon: <IconRename />, onClick: () => startRename(targets[0]) },
           ...(targets[0].kind === "file"
-            ? [{ kind: "action" as const, label: "Copy", icon: <IconCopy />, onClick: () => copyToClipboard(targets) }]
+            ? [{ kind: "action" as const, label: t("files.copy"), icon: <IconCopy />, onClick: () => copyToClipboard(targets) }]
             : []),
-          { kind: "action", label: "Cut", icon: <IconCopy />, onClick: () => cutToClipboard(targets) },
+          { kind: "action", label: t("files.cut"), icon: <IconCopy />, onClick: () => cutToClipboard(targets) },
           ...(clipboard ? [{ kind: "action" as const, label: pasteLabel, icon: <IconPaste />, onClick: paste }] : []),
-          { kind: "action", label: "Copy path", icon: <IconLink />, onClick: () => copyPaths(targets) },
+          { kind: "action", label: t("files.copy_path"), icon: <IconLink />, onClick: () => copyPaths(targets) },
           { kind: "sep" },
-          { kind: "action", label: "Delete", danger: true, icon: <IconTrash />, onClick: () => removeMany(targets) },
+          { kind: "action", label: t("common.delete"), danger: true, icon: <IconTrash />, onClick: () => removeMany(targets) },
         ];
     setCtx({ x, y, items });
   };
@@ -644,15 +646,15 @@ export function SidebarFiles({
     if (!id) return;
     const pasteLabel = clipboard
       ? clipboard.mode === "cut"
-        ? `Move ${clipboard.items.length} here`
-        : `Paste ${clipboard.items.length}`
+        ? t("files.move_here", { count: clipboard.items.length })
+        : t("files.paste", { count: clipboard.items.length })
       : "";
     const items: CtxItem[] = [
-      { kind: "action", label: "New folder", icon: <IconNewFolder />, onClick: startCreate },
-      { kind: "action", label: "Upload files…", icon: <IconUpload />, onClick: uploadDialog },
+      { kind: "action", label: t("files.new_folder"), icon: <IconNewFolder />, onClick: startCreate },
+      { kind: "action", label: t("files.upload_files"), icon: <IconUpload />, onClick: uploadDialog },
       ...(clipboard ? [{ kind: "action" as const, label: pasteLabel, icon: <IconPaste />, onClick: paste }] : []),
       { kind: "sep" },
-      { kind: "action", label: "Refresh", icon: <IconRefresh />, onClick: () => id && refresh(id, cwd) },
+      { kind: "action", label: t("files.refresh"), icon: <IconRefresh />, onClick: () => id && refresh(id, cwd) },
     ];
     setCtx({ x, y, items });
   };
@@ -664,8 +666,8 @@ export function SidebarFiles({
   if (!sshConfig) {
     return (
       <div className="sbf__empty">
-        <p>No machine connected.</p>
-        <p className="sbf__empty-hint">Open an SSH session to browse its files here.</p>
+        <p>{t("files.no_machine")}</p>
+        <p className="sbf__empty-hint">{t("files.no_machine_hint")}</p>
       </div>
     );
   }
@@ -674,22 +676,22 @@ export function SidebarFiles({
     <div className="sbf">
       <div className="sbf__head">
         <span className="sbf__host" data-tooltip={sessionTitle} data-tooltip-pos="bottom">
-          {sessionTitle ?? "Files"}
+          {sessionTitle ?? t("files.files_title")}
         </span>
         <div className="sbf__actions">
-          <button className="sbf__icon-btn" onClick={() => id && refresh(id, home)} disabled={!id} data-tooltip="Home" data-tooltip-pos="bottom">
+          <button className="sbf__icon-btn" onClick={() => id && refresh(id, home)} disabled={!id} data-tooltip={t("sftp.home_tooltip")} data-tooltip-pos="bottom">
             <IconHome />
           </button>
-          <button className="sbf__icon-btn" onClick={goUp} disabled={!id || cwd === "/"} data-tooltip="Up one level" data-tooltip-pos="bottom">
+          <button className="sbf__icon-btn" onClick={goUp} disabled={!id || cwd === "/"} data-tooltip={t("sftp.up_tooltip")} data-tooltip-pos="bottom">
             <IconUp />
           </button>
-          <button className="sbf__icon-btn" onClick={() => id && refresh(id, cwd)} disabled={!id} data-tooltip="Refresh" data-tooltip-pos="bottom">
+          <button className="sbf__icon-btn" onClick={() => id && refresh(id, cwd)} disabled={!id} data-tooltip={t("sftp.refresh_tooltip")} data-tooltip-pos="bottom">
             <IconRefresh />
           </button>
-          <button className="sbf__icon-btn" onClick={startCreate} disabled={!id || busy} data-tooltip="New folder" data-tooltip-pos="bottom">
+          <button className="sbf__icon-btn" onClick={startCreate} disabled={!id || busy} data-tooltip={t("sftp.new_folder_tooltip")} data-tooltip-pos="bottom">
             <IconNewFolder />
           </button>
-          <button className="sbf__icon-btn" onClick={uploadDialog} disabled={!id || busy} data-tooltip="Upload files" data-tooltip-pos="bottom">
+          <button className="sbf__icon-btn" onClick={uploadDialog} disabled={!id || busy} data-tooltip={t("sftp.upload_tooltip")} data-tooltip-pos="bottom">
             <IconUpload />
           </button>
         </div>
@@ -740,7 +742,7 @@ export function SidebarFiles({
             setPathEditing(true);
           }}
           disabled={!id}
-          data-tooltip="Edit path"
+          data-tooltip={t("files.edit_path")}
           data-tooltip-pos="bottom"
         >
           <IconRename size={13} />
@@ -749,7 +751,7 @@ export function SidebarFiles({
           className="sbf__icon-btn sbf__path-btn"
           onClick={() => navigator.clipboard?.writeText(cwd).catch(() => {})}
           disabled={!id}
-          data-tooltip="Copy current path"
+          data-tooltip={t("files.copy_current_path")}
           data-tooltip-pos="bottom"
         >
           <IconLink size={13} />
@@ -759,12 +761,12 @@ export function SidebarFiles({
       {/* Column headers — Name/Size/Modified sort; Perms/Owner/Group are labels.
           Shares its grid template with each row so values sit under their header. */}
       <div className="sbf__cols">
-        {sortKey("name", "Name", "sbf__col-name")}
-        <span className="sbf__col-label">Perms</span>
-        <span className="sbf__col-label">Owner</span>
-        <span className="sbf__col-label">Group</span>
-        {sortKey("size", "Size")}
-        {sortKey("modified", "Modified")}
+        {sortKey("name", t("files.col_name"), "sbf__col-name")}
+        <span className="sbf__col-label">{t("files.col_perms")}</span>
+        <span className="sbf__col-label">{t("files.col_owner")}</span>
+        <span className="sbf__col-label">{t("files.col_group")}</span>
+        {sortKey("size", t("files.col_size"))}
+        {sortKey("modified", t("files.col_modified"))}
       </div>
 
       {error && <p className="sbf__error">{error}</p>}
@@ -773,7 +775,7 @@ export function SidebarFiles({
         <div className="sbf__transfer">
           <div className="sbf__transfer-top">
             <span className="sbf__transfer-label">
-              {transfer.kind === "upload" ? "Uploading" : "Downloading"}{" "}
+              {transfer.kind === "upload" ? t("files.uploading") : t("files.downloading")}{" "}
               {basename(transfer.progress.path) || "…"}
             </span>
             <span className="sbf__transfer-pct">
@@ -812,7 +814,7 @@ export function SidebarFiles({
           }
         }}
       >
-        {!id && busy && <p className="sbf__status">Connecting…</p>}
+        {!id && busy && <p className="sbf__status">{t("files.connecting")}</p>}
 
         {creating && (
           <div className="sbf__row sbf__row--editing">
@@ -823,7 +825,7 @@ export function SidebarFiles({
               className="sbf__edit"
               autoFocus
               value={createValue}
-              placeholder="Folder name"
+              placeholder={t("files.folder_name_placeholder")}
               onChange={(e) => setCreateValue(e.target.value)}
               onKeyDown={(e) => {
                 e.stopPropagation();
@@ -890,7 +892,7 @@ export function SidebarFiles({
                 onClick={(e) => clickRow(entry, e)}
                 onDoubleClick={() => navigate(entry)}
                 onContextMenu={(e) => rowContext(entry, e)}
-                data-tooltip={entry.kind === "dir" ? "Double-click to open" : "Double-click to download"}
+                data-tooltip={entry.kind === "dir" ? t("sftp.open_hint") : t("sftp.download_hint")}
               >
                 <span className="sbf__cell sbf__cell-name">
                   <span className="sbf__icon">
@@ -920,7 +922,7 @@ export function SidebarFiles({
                       e.stopPropagation();
                       download(entry);
                     }}
-                    data-tooltip="Download"
+                    data-tooltip={t("sftp.download_tooltip")}
                   >
                     <IconDownload size={14} />
                   </button>
@@ -929,33 +931,33 @@ export function SidebarFiles({
             ),
           )}
         {id && !busy && entries.length === 0 && !creating && (
-          <p className="sbf__status">Empty directory</p>
+          <p className="sbf__status">{t("files.empty_dir")}</p>
         )}
 
-        {isOver && <div className="sbf__drop-hint">Drop to upload here</div>}
+        {isOver && <div className="sbf__drop-hint">{t("files.drop_upload")}</div>}
       </div>
 
-      {selected.size > 1 && <div className="sbf__selbar">{selected.size} selected</div>}
+      {selected.size > 1 && <div className="sbf__selbar">{t("files.selected", { count: selected.size })}</div>}
 
       {telemetry && (
         <div className="sbf__telemetry">
           {telemetry.os_name && (
-            <div className="sbf__tel-os" data-tooltip={telemetry.os_name} data-tooltip-pos="bottom">
+            <div className="sbf__tel-os" data-tooltip={telemetry.os_name}>
               {telemetry.os_name}
             </div>
           )}
           {telemetry.mem_total > 0 && (
-            <Meter label="CPU" percent={telemetry.cpu_percent} detail={`${telemetry.cpu_percent.toFixed(0)}%`} />
+            <Meter label={t("files.cpu")} percent={telemetry.cpu_percent} detail={`${telemetry.cpu_percent.toFixed(0)}%`} />
           )}
           {telemetry.mem_total > 0 && (
             <Meter
-              label="RAM"
+              label={t("files.ram")}
               percent={telemetry.mem_percent}
               detail={`${fmtBytes(telemetry.mem_used)} / ${fmtBytes(telemetry.mem_total)}`}
             />
           )}
           {telemetry.disk_total > 0 && (
-            <Meter label="Disk" percent={telemetry.disk_percent} detail={`${fmtBytes(telemetry.disk_avail)} free`} />
+            <Meter label={t("files.disk")} percent={telemetry.disk_percent} detail={`${fmtBytes(telemetry.disk_avail)} ${t("files.free")}`} />
           )}
         </div>
       )}

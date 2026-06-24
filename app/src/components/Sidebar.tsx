@@ -167,7 +167,7 @@ function SessionRow({
           onToggleFavorite();
         }}
         data-tooltip={session.favorite ? t("sidebar.remove_from_favorites") : t("sidebar.add_to_favorites")}
-
+        data-tooltip-pos="left"
         aria-pressed={session.favorite}
       >
         {session.favorite ? "★" : "☆"}
@@ -177,6 +177,7 @@ function SessionRow({
         className="sb-session__more"
         onClick={handleMenu}
         data-tooltip={t("sidebar.more_options")}
+        data-tooltip-pos="left"
       >
         ⋮
       </button>

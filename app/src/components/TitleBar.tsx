@@ -58,7 +58,7 @@ export function TitleBar() {
           onClick={() => appWindow?.minimize()}
           aria-label={t("titlebar.minimize")}
           data-tooltip={t("titlebar.minimize")}
-          data-tooltip-pos="bottom"
+          data-tooltip-pos="bottom-end"
         >
           <Glyph d="M3 8h10" />
         </button>
@@ -67,7 +67,7 @@ export function TitleBar() {
           onClick={() => appWindow?.toggleMaximize()}
           aria-label={t("titlebar.maximize")}
           data-tooltip={t("titlebar.maximize")}
-          data-tooltip-pos="bottom"
+          data-tooltip-pos="bottom-end"
         >
           <Glyph d="M3.5 3.5h9v9h-9z" fill="none" />
         </button>
@@ -76,7 +76,7 @@ export function TitleBar() {
           onClick={() => appWindow?.close()}
           aria-label={t("titlebar.close")}
           data-tooltip={t("titlebar.close")}
-          data-tooltip-pos="bottom"
+          data-tooltip-pos="bottom-end"
         >
           <Glyph d="M4 4l8 8M12 4l-8 8" />
         </button>

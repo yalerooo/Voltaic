@@ -125,7 +125,7 @@ export function SettingsModal() {
     >
       <div className="set-card" role="dialog" aria-modal="true">
         <div className="set-header">
-          <span className="set-title">Settings</span>
+          <span className="set-title">{t("common.settings")}</span>
           <button className="set-close" onClick={close} aria-label="Close">
             ✕
           </button>
@@ -350,8 +350,7 @@ export function SettingsModal() {
                 </svg>
                 <div className="set-about-name">Voltaic</div>
                 <p className="set-about-text">
-                  A MobaXterm-class connection manager. Preferences are stored as TOML and applied
-                  instantly.
+                  {t("settings.about.description")}
                 </p>
               </div>
             )}

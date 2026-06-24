@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { SshConfig } from "../lib/types";
 import "./SshConnectForm.css";
 
@@ -30,6 +31,7 @@ export function SshConnectForm({
   initialConfig?: SshConfig;
   externalError?: string | null;
 }) {
+  const { t } = useTranslation();
   const init = initFromConfig(initialConfig);
   const [host, setHost] = useState(init.host);
   const [port, setPort] = useState(init.port);
@@ -68,18 +70,18 @@ export function SshConnectForm({
 
         <div className="connect__row">
           <label className="connect__field connect__field--grow">
-            <span>Host</span>
+            <span>{t("form.host")}</span>
             <input
               className="connect__input"
               value={host}
               onChange={(e) => setHost(e.target.value)}
-              placeholder="example.com"
+              placeholder={t("form.ph_host")}
               required
               autoFocus={!initialConfig}
             />
           </label>
           <label className="connect__field connect__field--port">
-            <span>Port</span>
+            <span>{t("form.port")}</span>
             <input
               className="connect__input"
               type="number"
@@ -92,12 +94,12 @@ export function SshConnectForm({
         </div>
 
         <label className="connect__field">
-          <span>Username</span>
+          <span>{t("form.username")}</span>
           <input
             className="connect__input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="root"
+            placeholder={t("form.ph_root")}
             required
           />
         </label>
@@ -110,14 +112,14 @@ export function SshConnectForm({
               className={"connect__tab" + (method === m ? " is-active" : "")}
               onClick={() => setMethod(m)}
             >
-              {m === "password" ? "Password" : m === "key" ? "Private key" : "Agent"}
+              {m === "password" ? t("form.auth_password") : m === "key" ? t("form.auth_key") : t("form.auth_agent")}
             </button>
           ))}
         </div>
 
         {method === "password" && (
           <label className="connect__field">
-            <span>Password</span>
+            <span>{t("form.password")}</span>
             <input
               className="connect__input"
               type="password"
@@ -130,17 +132,17 @@ export function SshConnectForm({
         {method === "key" && (
           <>
             <label className="connect__field">
-              <span>Private key (PEM / OpenSSH)</span>
+              <span>{t("form.private_key")}</span>
               <textarea
                 className="connect__input connect__textarea"
                 value={privateKey}
                 onChange={(e) => setPrivateKey(e.target.value)}
-                placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+                placeholder={t("form.ph_private_key")}
                 rows={4}
               />
             </label>
             <label className="connect__field">
-              <span>Passphrase (optional)</span>
+              <span>{t("form.passphrase_optional")}</span>
               <input
                 className="connect__input"
                 type="password"
@@ -153,14 +155,14 @@ export function SshConnectForm({
 
         {method === "agent" && (
           <p className="connect__note">
-            Uses identities from your running SSH agent.
+            {t("form.agent_note")}
           </p>
         )}
 
         {displayError && <p className="connect__error">{displayError}</p>}
 
         <button className="connect__submit" type="submit" disabled={busy}>
-          {busy ? "Connecting…" : cta}
+          {busy ? t("form.connecting") : cta}
         </button>
       </form>
     </div>

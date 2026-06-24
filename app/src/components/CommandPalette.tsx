@@ -3,6 +3,7 @@
 // registry + fuzzy filter; universal search over hosts/history hooks in later.
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/appStore";
 import "./CommandPalette.css";
 
@@ -14,6 +15,7 @@ interface Action {
 }
 
 export function CommandPalette() {
+  const { t } = useTranslation();
   const { paletteOpen, setPaletteOpen, openTab, theme, setTheme } =
     useAppStore();
   const [query, setQuery] = useState("");
@@ -24,25 +26,25 @@ export function CommandPalette() {
     () => [
       {
         id: "new-terminal",
-        title: "New terminal",
-        hint: "Open a local shell",
+        title: t("commandPalette.new_terminal"),
+        hint: t("commandPalette.new_terminal_hint"),
         run: () =>
           openTab({ title: "Terminal", kind: "terminal", shell: "default" }),
       },
       {
         id: "new-ssh",
-        title: "New SSH session",
-        hint: "Phase 2",
+        title: t("commandPalette.new_ssh"),
+        hint: t("commandPalette.new_ssh_hint"),
         run: () => openTab({ title: "SSH", kind: "session", protocol: "ssh" }),
       },
       {
         id: "toggle-theme",
-        title: `Switch to ${theme === "dark" ? "light" : "dark"} theme`,
-        hint: "Appearance",
+        title: theme === "dark" ? t("commandPalette.toggle_theme_light") : t("commandPalette.toggle_theme_dark"),
+        hint: t("commandPalette.toggle_theme_hint"),
         run: () => setTheme(theme === "dark" ? "light" : "dark"),
       },
     ],
-    [openTab, theme, setTheme],
+    [t, openTab, theme, setTheme],
   );
 
   const filtered = useMemo(() => {
@@ -98,7 +100,7 @@ export function CommandPalette() {
         <input
           ref={inputRef}
           className="palette__input"
-          placeholder="Type a command or search…"
+          placeholder={t("commandPalette.placeholder")}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -107,7 +109,7 @@ export function CommandPalette() {
         />
         <ul className="palette__list">
           {filtered.length === 0 && (
-            <li className="palette__empty">No matching commands</li>
+            <li className="palette__empty">{t("commandPalette.no_results")}</li>
           )}
           {filtered.map((a, i) => (
             <li
