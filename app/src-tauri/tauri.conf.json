@@ -11,6 +11,7 @@
   },
   "app": {
     "withGlobalTauri": false,
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "Voltaic",
@@ -21,8 +22,7 @@
         "resizable": true,
         "decorations": false,
         "transparent": true,
-        "theme": "Dark",
-        "backgroundColor": "#0a0a0a"
+        "theme": "Dark"
       }
     ],
     "security": {

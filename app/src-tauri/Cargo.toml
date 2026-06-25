@@ -35,7 +35,7 @@ voltaic-workspace = { workspace = true }
 voltaic-updater = { workspace = true }
 
 # Tauri runtime
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["macos-private-api"] }
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
 

@@ -60,8 +60,16 @@
     "sort_protocol": "Protocolo",
     "delete_session": "Eliminar sesión",
     "delete_folder": "Eliminar carpeta",
+    "delete_folder_keep": "Eliminar carpeta (mantener sesiones)",
     "set_color": "Establecer color",
-    "no_color": "Sin color"
+    "no_color": "Sin color",
+    "tab_sessions": "Sesiones",
+    "tab_files": "Archivos",
+    "folder_color": "Color de carpeta",
+    "new_subfolder": "Nueva subcarpeta",
+    "rename_folder": "Renombrar carpeta",
+    "remove_from_folder": "Quitar de carpeta",
+    "open": "Abrir"
   },
   "welcome": {
     "badge": "Voltaic · alfa",

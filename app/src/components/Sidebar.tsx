@@ -217,6 +217,7 @@ interface FolderShared {
   newFolderInputRef: React.RefObject<HTMLInputElement>;
   onSubmitFolder: () => void;
   onCancelFolder: () => void;
+  folderNamePlaceholder: string;
 }
 
 // ---- Folder node (recursive) ----
@@ -300,7 +301,7 @@ function FolderNode({ node, shared }: { node: TreeNode; shared: FolderShared }) 
                 <input
                   ref={shared.newFolderInputRef}
                   className="sb-folder__edit"
-                  placeholder="Folder name"
+                  placeholder={shared.folderNamePlaceholder}
                   value={shared.newFolderDraft}
                   onChange={(e) => shared.setNewFolderDraft(e.target.value)}
                   onKeyDown={(e) => {
@@ -745,32 +746,32 @@ export function Sidebar() {
     const otherFolders = allFolders.filter((f) => f !== s.folder_id);
 
     const items: CtxItem[] = [
-      { kind: "action", label: "Open", onClick: () => openSession(s) },
+      { kind: "action", label: t("sidebar.open"), onClick: () => openSession(s) },
       {
         kind: "action",
-        label: s.favorite ? "Remove from favorites" : "Add to favorites",
+        label: s.favorite ? t("sidebar.remove_from_favorites") : t("sidebar.add_to_favorites"),
         icon: <IconStar />,
         onClick: () => updateSession({ ...s, favorite: !s.favorite }),
       },
       { kind: "sep" },
-      { kind: "action", label: "Rename", onClick: () => { setCtx(null); renameSession(s); } },
+      { kind: "action", label: t("common.rename"), onClick: () => { setCtx(null); renameSession(s); } },
       ...(s.folder_id
         ? [
             {
               kind: "action" as const,
-              label: "Remove from folder",
+              label: t("sidebar.remove_from_folder"),
               onClick: () => moveToFolder(s, null),
             },
           ]
         : []),
       ...otherFolders.map((f) => ({
         kind: "action" as const,
-        label: `Move to "${f}"`,
+        label: t("sidebar.move_to_folder", { folder: f }),
         onClick: () => moveToFolder(s, f),
       })),
       {
         kind: "action" as const,
-        label: "Move to new folder…",
+        label: t("sidebar.move_to_new_folder"),
         onClick: () => {
           setNewFolderMoveSession(s);
           newFolder(null);
@@ -780,7 +781,7 @@ export function Sidebar() {
       {
         kind: "action" as const,
         danger: true,
-        label: "Delete",
+        label: t("common.delete"),
         onClick: () => deleteSession(s),
       },
     ];
@@ -791,7 +792,7 @@ export function Sidebar() {
     const items: CtxItem[] = [
       {
         kind: "swatches",
-        label: "Folder color",
+        label: t("sidebar.folder_color"),
         colors: FOLDER_COLORS,
         current: folderColor(folder) ?? null,
         onPick: (value) => setFolderColor(folder, value),
@@ -799,7 +800,7 @@ export function Sidebar() {
       { kind: "sep" },
       {
         kind: "action",
-        label: "New subfolder",
+        label: t("sidebar.new_subfolder"),
         onClick: () => {
           setCtx(null);
           newFolder(folder);
@@ -807,7 +808,7 @@ export function Sidebar() {
       },
       {
         kind: "action",
-        label: "Rename folder",
+        label: t("sidebar.rename_folder"),
         onClick: () => {
           setCtx(null);
           setEditingFolder(folder);
@@ -817,7 +818,7 @@ export function Sidebar() {
       {
         kind: "action",
         danger: true,
-        label: "Delete folder (keep sessions)",
+        label: t("sidebar.delete_folder_keep"),
         onClick: async () => {
           // Move direct sessions to root.
           const toMove = sessions.filter((s) => s.folder_id === folder);
@@ -962,6 +963,7 @@ export function Sidebar() {
     newFolderInputRef,
     onSubmitFolder: submitNewFolder,
     onCancelFolder: cancelNewFolder,
+    folderNamePlaceholder: t("sidebar.folder_name_placeholder"),
   };
 
   return (
@@ -981,7 +983,7 @@ export function Sidebar() {
           className={`sidebar__tab${view === "sessions" ? " is-active" : ""}`}
           onClick={() => setView("sessions")}
         >
-          Sessions
+          {t("sidebar.tab_sessions")}
         </button>
         <button
           role="tab"
@@ -989,7 +991,7 @@ export function Sidebar() {
           className={`sidebar__tab${view === "files" ? " is-active" : ""}`}
           onClick={() => setView("files")}
         >
-          Files
+          {t("sidebar.tab_files")}
           {activeSsh && <span className="sidebar__tab-dot" />}
         </button>
       </div>

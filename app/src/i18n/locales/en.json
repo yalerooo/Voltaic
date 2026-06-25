@@ -60,8 +60,16 @@
     "sort_protocol": "Protocol",
     "delete_session": "Delete session",
     "delete_folder": "Delete folder",
+    "delete_folder_keep": "Delete folder (keep sessions)",
     "set_color": "Set color",
-    "no_color": "None"
+    "no_color": "None",
+    "tab_sessions": "Sessions",
+    "tab_files": "Files",
+    "folder_color": "Folder color",
+    "new_subfolder": "New subfolder",
+    "rename_folder": "Rename folder",
+    "remove_from_folder": "Remove from folder",
+    "open": "Open"
   },
   "welcome": {
     "badge": "Voltaic · alpha",
