@@ -185,35 +185,21 @@ function SessionRow({
   );
 }
 
-// ---- Folder node ----
+// ---- Folder tree types ----
 
-function FolderNode({
-  name,
-  sessions,
-  open,
-  color,
-  isDropTarget,
-  draggingId,
-  isRenaming,
-  onToggle,
-  editingId,
-  onOpen,
-  onSessionMenu,
-  onFolderMenu,
-  onRename,
-  onStartRename,
-  onToggleFavorite,
-  onSessionDragStart,
-  onRenameFolder,
-}: {
+interface TreeNode {
   name: string;
-  sessions: Session[];
-  open: boolean;
   color?: string;
-  isDropTarget: boolean;
+  children: TreeNode[];
+  sessions: Session[];
+}
+
+/** Props shared across all FolderNode instances in the tree (passed down unchanged). */
+interface FolderShared {
+  isOpen: (name: string) => boolean;
+  dropTarget: string | null;
   draggingId: string | null;
-  isRenaming: boolean;
-  onToggle: () => void;
+  editingFolder: string | null;
   editingId: string | null;
   onOpen: (s: Session) => void;
   onSessionMenu: (s: Session, x: number, y: number) => void;
@@ -222,8 +208,26 @@ function FolderNode({
   onStartRename: (s: Session) => void;
   onToggleFavorite: (s: Session) => void;
   onSessionDragStart: (s: Session, e: React.MouseEvent) => void;
-  onRenameFolder: (newName: string) => void;
-}) {
+  onToggleFolder: (name: string) => void;
+  onRenameFolder: (oldName: string, newName: string) => void;
+  /** undefined = not creating; null = root; "name" = inside that folder */
+  newFolderParent: string | null | undefined;
+  newFolderDraft: string;
+  setNewFolderDraft: (v: string) => void;
+  newFolderInputRef: React.RefObject<HTMLInputElement>;
+  onSubmitFolder: () => void;
+  onCancelFolder: () => void;
+}
+
+// ---- Folder node (recursive) ----
+
+function FolderNode({ node, shared }: { node: TreeNode; shared: FolderShared }) {
+  const { name, color, children, sessions } = node;
+  const open = shared.isOpen(name);
+  const isDropTarget = shared.dropTarget === name;
+  const isRenaming = shared.editingFolder === name;
+  const creatingSubfolder = shared.newFolderParent === name;
+
   const [draft, setDraft] = useState(name);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -237,7 +241,7 @@ function FolderNode({
     }
   }, [isRenaming, name]);
 
-  const submit = () => onRenameFolder(draft.trim() || name);
+  const submit = () => shared.onRenameFolder(name, draft.trim() || name);
 
   return (
     <div className={`sb-folder${isDropTarget ? " is-dragover" : ""}`} data-folder={name}>
@@ -258,7 +262,7 @@ function FolderNode({
                 submit();
               } else if (e.key === "Escape") {
                 e.preventDefault();
-                onRenameFolder(name); // cancel
+                shared.onRenameFolder(name, name); // cancel
               }
             }}
             onBlur={submit}
@@ -267,10 +271,10 @@ function FolderNode({
       ) : (
         <button
           className="sb-folder__row"
-          onClick={onToggle}
+          onClick={() => shared.onToggleFolder(name)}
           onContextMenu={(e) => {
             e.preventDefault();
-            onFolderMenu(name, e.clientX, e.clientY);
+            shared.onFolderMenu(name, e.clientX, e.clientY);
           }}
         >
           <span className={`sb-folder__arrow${open ? " is-open" : ""}`}>▶</span>
@@ -283,18 +287,48 @@ function FolderNode({
       )}
       {open && (
         <div className="sb-folder__children">
+          {children.map((child) => (
+            <FolderNode key={child.name} node={child} shared={shared} />
+          ))}
+          {creatingSubfolder && (
+            <div className="sb-folder">
+              <div className="sb-folder__row sb-folder__row--editing">
+                <span className="sb-folder__arrow" />
+                <span className="sb-folder__icon">
+                  <IconFolder size={15} />
+                </span>
+                <input
+                  ref={shared.newFolderInputRef}
+                  className="sb-folder__edit"
+                  placeholder="Folder name"
+                  value={shared.newFolderDraft}
+                  onChange={(e) => shared.setNewFolderDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      shared.onSubmitFolder();
+                    } else if (e.key === "Escape") {
+                      e.preventDefault();
+                      shared.onCancelFolder();
+                    }
+                  }}
+                  onBlur={shared.onSubmitFolder}
+                />
+              </div>
+            </div>
+          )}
           {sessions.map((s) => (
             <SessionRow
               key={s.id}
               session={s}
-              isEditing={editingId === s.id}
-              dragging={draggingId === s.id}
-              onOpen={() => onOpen(s)}
-              onMenuOpen={(x, y) => onSessionMenu(s, x, y)}
-              onRename={(name) => onRename(s, name)}
-              onStartRename={() => onStartRename(s)}
-              onToggleFavorite={() => onToggleFavorite(s)}
-              onDragStart={(e) => onSessionDragStart(s, e)}
+              isEditing={shared.editingId === s.id}
+              dragging={shared.draggingId === s.id}
+              onOpen={() => shared.onOpen(s)}
+              onMenuOpen={(x, y) => shared.onSessionMenu(s, x, y)}
+              onRename={(n) => shared.onRename(s, n)}
+              onStartRename={() => shared.onStartRename(s)}
+              onToggleFavorite={() => shared.onToggleFavorite(s)}
+              onDragStart={(e) => shared.onSessionDragStart(s, e)}
             />
           ))}
         </div>
@@ -337,6 +371,58 @@ function sortSessions(list: Session[], mode: SortMode): Session[] {
     copy.sort(byName);
   }
   return copy;
+}
+
+function buildTree(
+  records: FolderRecord[],
+  filtered: Session[],
+  sortMode: SortMode,
+  showEmpty: boolean,
+  parentId: string | null,
+): TreeNode[] {
+  const recordNames = new Set(records.map((r) => r.name));
+
+  const children = records
+    .filter((r) => (r.parent_id ?? null) === parentId)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((r) => ({
+      name: r.name,
+      color: r.color ?? undefined,
+      children: buildTree(records, filtered, sortMode, showEmpty, r.name),
+      sessions: sortSessions(
+        filtered.filter((s) => s.folder_id === r.name),
+        sortMode,
+      ),
+    }));
+
+  // Orphan folders: referenced by sessions but not in records (legacy data, root only).
+  const orphans: TreeNode[] =
+    parentId === null
+      ? [
+          ...new Set(
+            filtered
+              .map((s) => s.folder_id)
+              .filter((id): id is string => !!id && !recordNames.has(id)),
+          ),
+        ]
+          .sort()
+          .map((name) => ({
+            name,
+            color: undefined,
+            children: [],
+            sessions: sortSessions(
+              filtered.filter((s) => s.folder_id === name),
+              sortMode,
+            ),
+          }))
+      : [];
+
+  const all = [...children, ...orphans];
+  return showEmpty ? all : all.filter((n) => n.sessions.length > 0 || n.children.length > 0);
+}
+
+function allNamesInTree(nodes: TreeNode[]): string[] {
+  return nodes.flatMap((n) => [n.name, ...allNamesInTree(n.children)]);
 }
 
 const WIDTH_KEY = "voltaic:sidebar-width";
@@ -419,7 +505,9 @@ export function Sidebar() {
   const [drag, setDrag] = useState<{ id: string; name: string } | null>(null);
   const [ghost, setGhost] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [dropTarget, setDropTarget] = useState<string | null>(null); // folder name | "__root__" | null
-  const [newFolderDraft, setNewFolderDraft] = useState<string | null>(null);
+  const [newFolderDraft, setNewFolderDraft] = useState<string>("");
+  // undefined = not creating; null = root-level; "name" = subfolder of that folder
+  const [newFolderParent, setNewFolderParent] = useState<string | null | undefined>(undefined);
   const [newFolderMoveSession, setNewFolderMoveSession] = useState<Session | null>(null);
   const newFolderInputRef = useRef<HTMLInputElement>(null);
   const suppressClickRef = useRef(false);
@@ -481,7 +569,8 @@ export function Sidebar() {
   // Persist a folder's color change (upserts the record).
   const setFolderColor = async (folder: string, color: string | null) => {
     if (!isTauri) return;
-    await ipc.saveFolder({ name: folder, color });
+    const existing = folderRecords.find((r) => r.name === folder);
+    await ipc.saveFolder({ name: folder, color, parent_id: existing?.parent_id ?? null });
     refreshFolders();
   };
 
@@ -502,8 +591,11 @@ export function Sidebar() {
       return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
     };
     const resolveTarget = (x: number, y: number): string | null => {
-      for (const el of document.querySelectorAll<HTMLElement>("[data-folder]")) {
-        if (hit(el, x, y)) return el.getAttribute("data-folder");
+      // Iterate in reverse document order so the deepest (most specific) folder wins
+      // when the pointer is over a sub-folder whose ancestor also matches the hit test.
+      const all = [...document.querySelectorAll<HTMLElement>("[data-folder]")];
+      for (let i = all.length - 1; i >= 0; i--) {
+        if (hit(all[i], x, y)) return all[i].getAttribute("data-folder");
       }
       return hit(document.querySelector("[data-droproot]"), x, y) ? "__root__" : null;
     };
@@ -644,10 +736,13 @@ export function Sidebar() {
   };
 
   const openSessionMenu = (s: Session, x: number, y: number) => {
-    const folders = [
-      ...new Set(sessions.map((se) => se.folder_id).filter(Boolean)),
-    ] as string[];
-    const otherFolders = folders.filter((f) => f !== s.folder_id);
+    const allFolders = [
+      ...new Set([
+        ...folderRecords.map((r) => r.name),
+        ...sessions.map((se) => se.folder_id).filter(Boolean) as string[],
+      ]),
+    ].sort();
+    const otherFolders = allFolders.filter((f) => f !== s.folder_id);
 
     const items: CtxItem[] = [
       { kind: "action", label: "Open", onClick: () => openSession(s) },
@@ -678,8 +773,7 @@ export function Sidebar() {
         label: "Move to new folder…",
         onClick: () => {
           setNewFolderMoveSession(s);
-          setNewFolderDraft("");
-          requestAnimationFrame(() => newFolderInputRef.current?.focus());
+          newFolder(null);
         },
       },
       { kind: "sep" },
@@ -705,6 +799,14 @@ export function Sidebar() {
       { kind: "sep" },
       {
         kind: "action",
+        label: "New subfolder",
+        onClick: () => {
+          setCtx(null);
+          newFolder(folder);
+        },
+      },
+      {
+        kind: "action",
         label: "Rename folder",
         onClick: () => {
           setCtx(null);
@@ -717,9 +819,16 @@ export function Sidebar() {
         danger: true,
         label: "Delete folder (keep sessions)",
         onClick: async () => {
+          // Move direct sessions to root.
           const toMove = sessions.filter((s) => s.folder_id === folder);
           for (const s of toMove) {
             await ipc.saveSession({ ...s, folder_id: null });
+          }
+          // Re-parent sub-folders to this folder's parent (or root).
+          const parentId = folderRecords.find((r) => r.name === folder)?.parent_id ?? null;
+          const subFolders = folderRecords.filter((r) => r.parent_id === folder);
+          for (const sub of subFolders) {
+            await ipc.saveFolder({ ...sub, parent_id: parentId });
           }
           if (isTauri) await ipc.deleteFolder(folder);
           bumpSessionVersion();
@@ -733,17 +842,28 @@ export function Sidebar() {
 
   // ---- Quick-access toolbar handlers ----
 
-  const newFolder = () => {
+  const newFolder = (parent: string | null = null) => {
     setNewFolderDraft("");
+    setNewFolderParent(parent);
     setNewFolderMoveSession(null);
+    // Open the parent folder so the inline input is visible
+    if (parent !== null) {
+      setCollapsed((prev) => {
+        const next = new Set(prev);
+        next.delete(parent);
+        return next;
+      });
+    }
     requestAnimationFrame(() => newFolderInputRef.current?.focus());
   };
 
-  const submitNewFolder = async (draft: string) => {
-    const name = draft.trim();
-    setNewFolderDraft(null);
+  const submitNewFolder = async () => {
+    const name = newFolderDraft.trim();
+    const parent = newFolderParent;
+    setNewFolderParent(undefined);
+    setNewFolderDraft("");
     if (!name || !isTauri) return;
-    await ipc.saveFolder({ name, color: null });
+    await ipc.saveFolder({ name, color: null, parent_id: parent ?? null });
     if (newFolderMoveSession) {
       await moveToFolder(newFolderMoveSession, name);
       setNewFolderMoveSession(null);
@@ -751,9 +871,15 @@ export function Sidebar() {
     refreshFolders();
   };
 
+  const cancelNewFolder = () => {
+    setNewFolderParent(undefined);
+    setNewFolderDraft("");
+    setNewFolderMoveSession(null);
+  };
+
   // Rename a folder: the backend updates the record and all session references
   // atomically, so the frontend only needs to sync the collapsed state.
-  const finishFolderRename = async (oldName: string, rawNew: string) => {
+  const finishFolderRename = async (oldName: string, rawNew: string): Promise<void> => {
     setEditingFolder(null);
     const name = rawNew.trim();
     if (!name || name === oldName) return;
@@ -805,20 +931,38 @@ export function Sidebar() {
 
   // Show user-created (possibly empty) folders only when not actively filtering.
   const showExtras = !q && !favoritesOnly;
-  const extraFolderNames = showExtras ? folderRecords.map((f) => f.name) : [];
-  const folders = [
-    ...new Set([
-      ...filtered.map((s) => s.folder_id).filter(Boolean),
-      ...extraFolderNames,
-    ]),
-  ].sort((a, b) => (a as string).localeCompare(b as string)) as string[];
+  const rootTree = buildTree(folderRecords, filtered, sortMode, showExtras, null);
   const unfiled = sortSessions(filtered.filter((s) => !s.folder_id), sortMode);
 
-  // When filtering, force folders open so matches are visible.
+  // When filtering, force all folders open so matches are visible.
   const isFolderOpen = (folder: string) => (q ? true : !collapsed.has(folder));
-  const allCollapsed = folders.length > 0 && folders.every((f) => collapsed.has(f));
+  const allFolderNames = allNamesInTree(rootTree);
+  const allCollapsed = allFolderNames.length > 0 && allFolderNames.every((f) => collapsed.has(f));
   const toggleAllFolders = () =>
-    setCollapsed(allCollapsed ? new Set() : new Set(folders));
+    setCollapsed(allCollapsed ? new Set() : new Set(allFolderNames));
+
+  const folderShared: FolderShared = {
+    isOpen: isFolderOpen,
+    dropTarget,
+    draggingId: drag?.id ?? null,
+    editingFolder,
+    editingId,
+    onOpen: handleOpen,
+    onSessionMenu: openSessionMenu,
+    onFolderMenu: openFolderMenu,
+    onRename: finishRename,
+    onStartRename: renameSession,
+    onToggleFavorite: toggleFavorite,
+    onSessionDragStart: beginDrag,
+    onToggleFolder: toggleFolder,
+    onRenameFolder: finishFolderRename,
+    newFolderParent,
+    newFolderDraft,
+    setNewFolderDraft,
+    newFolderInputRef,
+    onSubmitFolder: submitNewFolder,
+    onCancelFolder: cancelNewFolder,
+  };
 
   return (
     <nav
@@ -891,7 +1035,7 @@ export function Sidebar() {
             </button>
             <button
               className="sidebar__quick-btn"
-              onClick={newFolder}
+              onClick={() => newFolder(null)}
               data-tooltip={t("sidebar.new_folder_tooltip")}
               data-tooltip-pos="bottom"
             >
@@ -900,7 +1044,7 @@ export function Sidebar() {
             <button
               className="sidebar__quick-btn"
               onClick={toggleAllFolders}
-              disabled={folders.length === 0}
+              disabled={allFolderNames.length === 0}
               data-tooltip={allCollapsed ? t("sidebar.expand_all") : t("sidebar.collapse_all")}
               data-tooltip-pos="bottom"
             >
@@ -962,13 +1106,13 @@ export function Sidebar() {
                 {t("sidebar.add_first_session")}
               </button>
             </div>
-          ) : folders.length === 0 && unfiled.length === 0 ? (
+          ) : rootTree.length === 0 && unfiled.length === 0 ? (
             <div className="sidebar__empty">
               <p>{favoritesOnly || q ? t("sidebar.no_matching") : t("sidebar.no_sessions")}</p>
             </div>
           ) : (
             <>
-              {newFolderDraft !== null && (
+              {newFolderParent === null && (
                 <div className="sb-folder">
                   <div className="sb-folder__row sb-folder__row--editing">
                     <span className="sb-folder__arrow" />
@@ -984,42 +1128,19 @@ export function Sidebar() {
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
-                          submitNewFolder(newFolderDraft);
+                          submitNewFolder();
                         } else if (e.key === "Escape") {
                           e.preventDefault();
-                          setNewFolderDraft(null);
-                          setNewFolderMoveSession(null);
+                          cancelNewFolder();
                         }
                       }}
-                      onBlur={() => submitNewFolder(newFolderDraft)}
+                      onBlur={submitNewFolder}
                     />
                   </div>
                 </div>
               )}
-              {folders.map((folder) => (
-                <FolderNode
-                  key={folder}
-                  name={folder}
-                  sessions={sortSessions(
-                    filtered.filter((s) => s.folder_id === folder),
-                    sortMode,
-                  )}
-                  open={isFolderOpen(folder)}
-                  color={folderColor(folder)}
-                  isDropTarget={dropTarget === folder}
-                  draggingId={drag?.id ?? null}
-                  isRenaming={editingFolder === folder}
-                  onToggle={() => toggleFolder(folder)}
-                  editingId={editingId}
-                  onOpen={handleOpen}
-                  onSessionMenu={openSessionMenu}
-                  onFolderMenu={openFolderMenu}
-                  onRename={finishRename}
-                  onStartRename={renameSession}
-                  onToggleFavorite={toggleFavorite}
-                  onSessionDragStart={beginDrag}
-                  onRenameFolder={(newName) => finishFolderRename(folder, newName)}
-                />
+              {rootTree.map((node) => (
+                <FolderNode key={node.name} node={node} shared={folderShared} />
               ))}
               {unfiled.map((s) => (
                 <SessionRow

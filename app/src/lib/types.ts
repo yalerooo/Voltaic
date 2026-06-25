@@ -5,6 +5,8 @@
 export interface FolderRecord {
   name: string;
   color: string | null;
+  /** Name of the parent folder, or null for a root-level folder. */
+  parent_id: string | null;
 }
 
 export type Protocol =

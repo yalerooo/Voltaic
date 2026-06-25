@@ -17,6 +17,8 @@ pub struct FolderRecord {
     pub name: String,
     /// CSS color string (e.g. `"#faff69"`), or `None` for the default accent.
     pub color: Option<String>,
+    /// Name of the parent folder, or `None` for a root-level folder.
+    pub parent_id: Option<String>,
 }
 
 /// Ordered DDL migrations. The index + 1 becomes the SQLite `user_version`.
@@ -186,9 +188,10 @@ impl Store {
     pub fn upsert_folder(&self, record: &FolderRecord) -> Result<()> {
         self.conn
             .execute(
-                "INSERT INTO folders (id, name, color) VALUES (?1, ?2, ?3)
-                 ON CONFLICT(id) DO UPDATE SET name=excluded.name, color=excluded.color",
-                params![record.name, record.name, record.color],
+                "INSERT INTO folders (id, name, color, parent_id) VALUES (?1, ?2, ?3, ?4)
+                 ON CONFLICT(id) DO UPDATE SET
+                    name=excluded.name, color=excluded.color, parent_id=excluded.parent_id",
+                params![record.name, record.name, record.color, record.parent_id],
             )
             .map_err(map_db)?;
         Ok(())
@@ -198,13 +201,16 @@ impl Store {
     pub fn list_folders(&self) -> Result<Vec<FolderRecord>> {
         let mut stmt = self
             .conn
-            .prepare("SELECT name, color FROM folders ORDER BY name COLLATE NOCASE")
+            .prepare(
+                "SELECT name, color, parent_id FROM folders ORDER BY name COLLATE NOCASE",
+            )
             .map_err(map_db)?;
         let rows = stmt
             .query_map([], |row| {
                 Ok(FolderRecord {
                     name: row.get(0)?,
                     color: row.get(1)?,
+                    parent_id: row.get(2)?,
                 })
             })
             .map_err(map_db)?;
@@ -231,16 +237,15 @@ impl Store {
         if old_name == new_name {
             return Ok(());
         }
-        // 1. Create the new folder record, inheriting the old color.
+        // 1. Create the new folder record, inheriting color and parent_id.
         self.conn
             .execute(
-                "INSERT OR REPLACE INTO folders (id, name, color)
-                 SELECT ?2, ?2, color FROM folders WHERE id = ?1",
+                "INSERT OR REPLACE INTO folders (id, name, color, parent_id)
+                 SELECT ?2, ?2, color, parent_id FROM folders WHERE id = ?1",
                 params![old_name, new_name],
             )
             .map_err(map_db)?;
-        // 2. Update the indexed column and the JSON payload atomically per row.
-        //    json_set keeps the payload in sync without a full re-serialization.
+        // 2. Update sessions: indexed column + JSON payload in one shot.
         self.conn
             .execute(
                 "UPDATE sessions
@@ -250,7 +255,14 @@ impl Store {
                 params![old_name, new_name],
             )
             .map_err(map_db)?;
-        // 3. Remove the old folder record.
+        // 3. Re-parent any sub-folders that pointed to the old name.
+        self.conn
+            .execute(
+                "UPDATE folders SET parent_id = ?2 WHERE parent_id = ?1",
+                params![old_name, new_name],
+            )
+            .map_err(map_db)?;
+        // 4. Remove the old folder record.
         self.conn
             .execute("DELETE FROM folders WHERE id = ?1", params![old_name])
             .map_err(map_db)?;
@@ -309,12 +321,14 @@ mod tests {
             .upsert_folder(&FolderRecord {
                 name: "servers".into(),
                 color: Some("#faff69".into()),
+                parent_id: None,
             })
             .unwrap();
         store
             .upsert_folder(&FolderRecord {
                 name: "dev".into(),
                 color: None,
+                parent_id: None,
             })
             .unwrap();
 
@@ -329,6 +343,7 @@ mod tests {
             .upsert_folder(&FolderRecord {
                 name: "servers".into(),
                 color: None,
+                parent_id: None,
             })
             .unwrap();
         let updated = store.list_folders().unwrap();
@@ -351,6 +366,7 @@ mod tests {
             .upsert_folder(&FolderRecord {
                 name: "old".into(),
                 color: Some("#ff0000".into()),
+                parent_id: None,
             })
             .unwrap();
 
