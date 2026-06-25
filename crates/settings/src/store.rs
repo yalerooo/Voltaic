@@ -306,10 +306,16 @@ mod tests {
         let store = Store::open_in_memory().unwrap();
 
         store
-            .upsert_folder(&FolderRecord { name: "servers".into(), color: Some("#faff69".into()) })
+            .upsert_folder(&FolderRecord {
+                name: "servers".into(),
+                color: Some("#faff69".into()),
+            })
             .unwrap();
         store
-            .upsert_folder(&FolderRecord { name: "dev".into(), color: None })
+            .upsert_folder(&FolderRecord {
+                name: "dev".into(),
+                color: None,
+            })
             .unwrap();
 
         let folders = store.list_folders().unwrap();
@@ -320,10 +326,18 @@ mod tests {
 
         // Upsert updates color in place.
         store
-            .upsert_folder(&FolderRecord { name: "servers".into(), color: None })
+            .upsert_folder(&FolderRecord {
+                name: "servers".into(),
+                color: None,
+            })
             .unwrap();
         let updated = store.list_folders().unwrap();
-        assert!(updated.iter().find(|f| f.name == "servers").unwrap().color.is_none());
+        assert!(updated
+            .iter()
+            .find(|f| f.name == "servers")
+            .unwrap()
+            .color
+            .is_none());
 
         store.delete_folder("dev").unwrap();
         assert_eq!(store.list_folders().unwrap().len(), 1);
@@ -334,7 +348,10 @@ mod tests {
         let store = Store::open_in_memory().unwrap();
 
         store
-            .upsert_folder(&FolderRecord { name: "old".into(), color: Some("#ff0000".into()) })
+            .upsert_folder(&FolderRecord {
+                name: "old".into(),
+                color: Some("#ff0000".into()),
+            })
             .unwrap();
 
         let mut s1 = Session::new("host-1", Protocol::Ssh);
@@ -354,6 +371,8 @@ mod tests {
 
         // All sessions updated in both column and JSON payload.
         let sessions = store.list_sessions().unwrap();
-        assert!(sessions.iter().all(|s| s.folder_id.as_deref() == Some("new")));
+        assert!(sessions
+            .iter()
+            .all(|s| s.folder_id.as_deref() == Some("new")));
     }
 }
