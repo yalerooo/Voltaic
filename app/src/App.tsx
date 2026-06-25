@@ -16,6 +16,7 @@ import { VncView } from "./components/VncView";
 import { FtpBrowser } from "./components/FtpBrowser";
 import { ContainerSession } from "./components/ContainerSession";
 import { useAppStore } from "./store/appStore";
+import { TooltipPortal } from "./components/TooltipPortal";
 import "./App.css";
 
 export default function App() {
@@ -101,6 +102,7 @@ export default function App() {
       <CommandPalette />
       <NewSessionModal />
       <SettingsModal />
+      <TooltipPortal />
     </div>
   );
 }
