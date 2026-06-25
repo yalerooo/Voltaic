@@ -15,4 +15,4 @@ pub mod store;
 
 pub use config::Config;
 pub use paths::AppPaths;
-pub use store::Store;
+pub use store::{FolderRecord, Store};

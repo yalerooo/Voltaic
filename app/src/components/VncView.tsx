@@ -5,12 +5,14 @@
 // the canvas and sent back. Reuses the RDP view's styling.
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ipc, onVncEvent } from "../lib/ipc";
 import type { VncConfig, VncInput } from "../lib/types";
 import { keysymFor } from "../lib/vncKeymap";
 import "./RdpView.css";
 
 export function VncView({ initialConfig }: { initialConfig?: VncConfig }) {
+  const { t } = useTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -175,7 +177,7 @@ export function VncView({ initialConfig }: { initialConfig?: VncConfig }) {
               setConnecting(false);
             }}
           >
-            Reconnect
+            {t("common.reconnect")}
           </button>
         </div>
       )}
@@ -208,6 +210,7 @@ function VncConnectForm({
   initialConfig?: VncConfig;
   onConnect: (config: VncConfig) => void;
 }) {
+  const { t } = useTranslation();
   const [host, setHost] = useState(initialConfig?.host ?? "");
   const [port, setPort] = useState(initialConfig?.port ?? 5900);
   const [password, setPassword] = useState(initialConfig?.password ?? "");
@@ -218,28 +221,28 @@ function VncConnectForm({
   };
 
   if (busy) {
-    return <div className="rdp__connecting">Connecting to {host}…</div>;
+    return <div className="rdp__connecting">{t("form.connecting_to", { host })}</div>;
   }
 
   return (
     <div className="rdp-connect">
       <form className="rdp-connect__card" onSubmit={submit}>
-        <h2 className="rdp-connect__title">New VNC session</h2>
+        <h2 className="rdp-connect__title">VNC</h2>
 
         <div className="rdp-connect__row">
           <label className="rdp-connect__field rdp-connect__field--grow">
-            <span>Host</span>
+            <span>{t("form.host")}</span>
             <input
               className="rdp-connect__input"
               value={host}
               onChange={(e) => setHost(e.target.value)}
-              placeholder="192.168.1.10"
+              placeholder={t("form.ph_ip")}
               required
               autoFocus
             />
           </label>
           <label className="rdp-connect__field rdp-connect__field--port">
-            <span>Port</span>
+            <span>{t("form.port")}</span>
             <input
               className="rdp-connect__input"
               type="number"
@@ -252,20 +255,20 @@ function VncConnectForm({
         </div>
 
         <label className="rdp-connect__field">
-          <span>Password</span>
+          <span>{t("form.password")}</span>
           <input
             className="rdp-connect__input"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Leave empty if the server has no auth"
+            placeholder={t("form.ph_vnc_pass")}
           />
         </label>
 
         {error && <p className="rdp-connect__error">{error}</p>}
 
         <button className="rdp-connect__submit" type="submit">
-          Connect
+          {t("common.connect")}
         </button>
       </form>
     </div>

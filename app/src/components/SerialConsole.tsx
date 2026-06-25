@@ -3,6 +3,7 @@
 // rendering path is identical to local PTYs and SSH shells.
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ipc, isTauri } from "../lib/ipc";
 import type { SerialConfig, SerialPortInfo } from "../lib/types";
 import { TerminalView } from "./TerminalView";
@@ -24,6 +25,7 @@ function defaultConfig(): SerialConfig {
 }
 
 export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig }) {
+  const { t } = useTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [ports, setPorts] = useState<SerialPortInfo[]>([]);
   const [cfg, setCfg] = useState<SerialConfig>(initialConfig ?? defaultConfig());
@@ -82,7 +84,7 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!cfg.port) {
-      setError("Select a port.");
+      setError(t("serial.select_port_error"));
       return;
     }
     connect(cfg);
@@ -93,16 +95,16 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
   }
 
   if (connecting) {
-    return <div className="serial__connecting">Opening {cfg.port}…</div>;
+    return <div className="serial__connecting">{t("serial.opening", { port: cfg.port })}</div>;
   }
 
   return (
     <div className="serial">
       <form className="serial__card" onSubmit={submit}>
-        <h2 className="serial__title">New serial console</h2>
+        <h2 className="serial__title">{t("serial.new_serial_console")}</h2>
 
         <label className="serial__field">
-          <span>Port</span>
+          <span>{t("serial.port")}</span>
           <div className="serial__port-row">
             <select
               className="serial__input"
@@ -110,7 +112,7 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
               onChange={(e) => setCfg({ ...cfg, port: e.target.value })}
             >
               <option value="" disabled>
-                {ports.length ? "Select a port…" : "No ports detected"}
+                {ports.length ? t("serial.select_port") : t("serial.no_ports")}
               </option>
               {ports.map((p) => (
                 <option key={p.name} value={p.name}>
@@ -123,7 +125,8 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
               type="button"
               className="serial__refresh"
               onClick={refreshPorts}
-              title="Rescan ports"
+              data-tooltip={t("serial.rescan")}
+              data-tooltip-pos="bottom"
             >
               ↻
             </button>
@@ -132,7 +135,7 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
 
         <div className="serial__row">
           <label className="serial__field">
-            <span>Baud rate</span>
+            <span>{t("serial.baud_rate")}</span>
             <select
               className="serial__input"
               value={cfg.baud_rate}
@@ -147,7 +150,7 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
           </label>
 
           <label className="serial__field">
-            <span>Data bits</span>
+            <span>{t("serial.data_bits")}</span>
             <select
               className="serial__input"
               value={cfg.data_bits}
@@ -164,7 +167,7 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
 
         <div className="serial__row">
           <label className="serial__field">
-            <span>Parity</span>
+            <span>{t("serial.parity")}</span>
             <select
               className="serial__input"
               value={cfg.parity}
@@ -172,14 +175,14 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
                 setCfg({ ...cfg, parity: e.target.value as SerialConfig["parity"] })
               }
             >
-              <option value="none">None</option>
-              <option value="odd">Odd</option>
-              <option value="even">Even</option>
+              <option value="none">{t("serial.parity_none")}</option>
+              <option value="odd">{t("serial.parity_odd")}</option>
+              <option value="even">{t("serial.parity_even")}</option>
             </select>
           </label>
 
           <label className="serial__field">
-            <span>Stop bits</span>
+            <span>{t("serial.stop_bits")}</span>
             <select
               className="serial__input"
               value={cfg.stop_bits}
@@ -191,7 +194,7 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
           </label>
 
           <label className="serial__field">
-            <span>Flow control</span>
+            <span>{t("serial.flow_control")}</span>
             <select
               className="serial__input"
               value={cfg.flow_control}
@@ -202,9 +205,9 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
                 })
               }
             >
-              <option value="none">None</option>
-              <option value="software">XON/XOFF</option>
-              <option value="hardware">RTS/CTS</option>
+              <option value="none">{t("serial.flow_none")}</option>
+              <option value="software">{t("serial.flow_software")}</option>
+              <option value="hardware">{t("serial.flow_hardware")}</option>
             </select>
           </label>
         </div>
@@ -212,7 +215,7 @@ export function SerialConsole({ initialConfig }: { initialConfig?: SerialConfig 
         {error && <p className="serial__error">{error}</p>}
 
         <button className="serial__submit" type="submit" disabled={!cfg.port}>
-          Open port
+          {t("serial.open_port")}
         </button>
       </form>
     </div>

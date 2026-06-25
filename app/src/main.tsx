@@ -5,8 +5,9 @@ import { ipc, isTauri } from "./lib/ipc";
 import { useAppStore } from "./store/appStore";
 import { applyAccent, applyAnimations } from "./lib/appearance";
 import "./styles/global.css";
+import i18n from "./i18n";
 
-// Apply persisted appearance (theme, accent, motion) before first paint.
+// Apply persisted appearance (theme, accent, motion, language) before first paint.
 async function bootstrap() {
   if (isTauri) {
     try {
@@ -16,6 +17,9 @@ async function bootstrap() {
       useAppStore.getState().setTheme(theme);
       applyAccent(config.appearance.accent);
       applyAnimations(config.appearance.animations);
+      if (config.appearance.language) {
+        await i18n.changeLanguage(config.appearance.language);
+      }
     } catch {
       // Fall back to the default dark theme + voltage accent.
     }

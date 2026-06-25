@@ -6,8 +6,18 @@
 //! `user_version`-based migration runner keeps the schema current.
 
 use rusqlite::{params, Connection, OptionalExtension};
+use serde::{Deserialize, Serialize};
 use voltaic_core::model::{Session, SessionId};
 use voltaic_core::{Error, Result};
+
+/// A folder with optional display color. The `name` doubles as the primary key
+/// so sessions can reference folders by name without a separate UUID join.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FolderRecord {
+    pub name: String,
+    /// CSS color string (e.g. `"#faff69"`), or `None` for the default accent.
+    pub color: Option<String>,
+}
 
 /// Ordered DDL migrations. The index + 1 becomes the SQLite `user_version`.
 const MIGRATIONS: &[&str] = &[
@@ -35,6 +45,8 @@ const MIGRATIONS: &[&str] = &[
         opened_at   TEXT NOT NULL
     );
     "#,
+    // v2 — add display color to folders.
+    "ALTER TABLE folders ADD COLUMN color TEXT;",
 ];
 
 /// Thread-confined SQLite repository. Wrap in a `Mutex`/dedicated task when
@@ -165,6 +177,90 @@ impl Store {
         Ok(())
     }
 
+    // -----------------------------------------------------------------------
+    // Folders
+    // -----------------------------------------------------------------------
+
+    /// Insert or update a folder record. `name` is the primary key; calling
+    /// this with an existing name updates its color.
+    pub fn upsert_folder(&self, record: &FolderRecord) -> Result<()> {
+        self.conn
+            .execute(
+                "INSERT INTO folders (id, name, color) VALUES (?1, ?2, ?3)
+                 ON CONFLICT(id) DO UPDATE SET name=excluded.name, color=excluded.color",
+                params![record.name, record.name, record.color],
+            )
+            .map_err(map_db)?;
+        Ok(())
+    }
+
+    /// List all persisted folder records ordered by name.
+    pub fn list_folders(&self) -> Result<Vec<FolderRecord>> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT name, color FROM folders ORDER BY name COLLATE NOCASE")
+            .map_err(map_db)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(FolderRecord {
+                    name: row.get(0)?,
+                    color: row.get(1)?,
+                })
+            })
+            .map_err(map_db)?;
+        rows.map(|r| r.map_err(map_db)).collect()
+    }
+
+    /// Delete a folder record by name. Sessions that referenced it keep their
+    /// `folder_id`; the caller is responsible for moving them first.
+    pub fn delete_folder(&self, name: &str) -> Result<()> {
+        self.conn
+            .execute("DELETE FROM folders WHERE id = ?1", params![name])
+            .map_err(map_db)?;
+        Ok(())
+    }
+
+    /// Rename a folder: carries over its color, updates every session's
+    /// `folder_id` column and JSON payload, then removes the old record.
+    /// The three statements are not wrapped in an explicit transaction because
+    /// `rusqlite::Connection::transaction` requires `&mut self`, which is
+    /// incompatible with the shared `&self` pattern used here. Rename is a
+    /// rare, user-initiated operation; partial state (new folder exists, some
+    /// sessions still point to old name) is recoverable by renaming again.
+    pub fn rename_folder(&self, old_name: &str, new_name: &str) -> Result<()> {
+        if old_name == new_name {
+            return Ok(());
+        }
+        // 1. Create the new folder record, inheriting the old color.
+        self.conn
+            .execute(
+                "INSERT OR REPLACE INTO folders (id, name, color)
+                 SELECT ?2, ?2, color FROM folders WHERE id = ?1",
+                params![old_name, new_name],
+            )
+            .map_err(map_db)?;
+        // 2. Update the indexed column and the JSON payload atomically per row.
+        //    json_set keeps the payload in sync without a full re-serialization.
+        self.conn
+            .execute(
+                "UPDATE sessions
+                 SET folder_id = ?2,
+                     payload   = json_set(payload, '$.folder_id', ?2)
+                 WHERE folder_id = ?1",
+                params![old_name, new_name],
+            )
+            .map_err(map_db)?;
+        // 3. Remove the old folder record.
+        self.conn
+            .execute("DELETE FROM folders WHERE id = ?1", params![old_name])
+            .map_err(map_db)?;
+        Ok(())
+    }
+
+    // -----------------------------------------------------------------------
+    // History
+    // -----------------------------------------------------------------------
+
     /// Record that a session was opened (for history/recents).
     pub fn record_open(&self, id: SessionId) -> Result<()> {
         self.conn
@@ -203,5 +299,61 @@ mod tests {
         store.delete_session(session.id).unwrap();
         assert!(store.get_session(session.id).unwrap().is_none());
         assert!(store.delete_session(session.id).is_err());
+    }
+
+    #[test]
+    fn folder_upsert_list_delete() {
+        let store = Store::open_in_memory().unwrap();
+
+        store
+            .upsert_folder(&FolderRecord { name: "servers".into(), color: Some("#faff69".into()) })
+            .unwrap();
+        store
+            .upsert_folder(&FolderRecord { name: "dev".into(), color: None })
+            .unwrap();
+
+        let folders = store.list_folders().unwrap();
+        assert_eq!(folders.len(), 2);
+        assert_eq!(folders[0].name, "dev");
+        assert_eq!(folders[1].name, "servers");
+        assert_eq!(folders[1].color.as_deref(), Some("#faff69"));
+
+        // Upsert updates color in place.
+        store
+            .upsert_folder(&FolderRecord { name: "servers".into(), color: None })
+            .unwrap();
+        let updated = store.list_folders().unwrap();
+        assert!(updated.iter().find(|f| f.name == "servers").unwrap().color.is_none());
+
+        store.delete_folder("dev").unwrap();
+        assert_eq!(store.list_folders().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn folder_rename_updates_sessions() {
+        let store = Store::open_in_memory().unwrap();
+
+        store
+            .upsert_folder(&FolderRecord { name: "old".into(), color: Some("#ff0000".into()) })
+            .unwrap();
+
+        let mut s1 = Session::new("host-1", Protocol::Ssh);
+        s1.folder_id = Some("old".into());
+        let mut s2 = Session::new("host-2", Protocol::Ssh);
+        s2.folder_id = Some("old".into());
+        store.upsert_session(&s1).unwrap();
+        store.upsert_session(&s2).unwrap();
+
+        store.rename_folder("old", "new").unwrap();
+
+        // Folder record renamed and color carried over.
+        let folders = store.list_folders().unwrap();
+        assert_eq!(folders.len(), 1);
+        assert_eq!(folders[0].name, "new");
+        assert_eq!(folders[0].color.as_deref(), Some("#ff0000"));
+
+        // All sessions updated in both column and JSON payload.
+        let sessions = store.list_sessions().unwrap();
+        assert!(sessions.iter().all(|s| s.folder_id.as_deref() == Some("new")));
     }
 }

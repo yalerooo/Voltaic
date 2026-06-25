@@ -4,6 +4,8 @@
 // TOML config via the IPC layer.
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import { ipc, isTauri } from "../lib/ipc";
 import { exportSessions, importSessions } from "../lib/sessionTransfer";
 import type { Config } from "../lib/types";
@@ -13,22 +15,23 @@ import "./SettingsModal.css";
 
 type Section = "appearance" | "sessions" | "terminal" | "security" | "updates" | "about";
 
-const SECTIONS: { id: Section; label: string; icon: string }[] = [
-  { id: "appearance", label: "Appearance", icon: "◑" },
-  { id: "sessions", label: "Sessions", icon: "≡" },
-  { id: "terminal", label: "Terminal", icon: "▣" },
-  { id: "security", label: "Security", icon: "⚿" },
-  { id: "updates", label: "Updates", icon: "↻" },
-  { id: "about", label: "About", icon: "ⓘ" },
-];
-
 const SHELLS = ["powershell", "cmd", "wsl", "bash", "zsh", "fish"];
 
 export function SettingsModal() {
+  const { t } = useTranslation();
   const open = useAppStore((s) => s.settingsOpen);
   const close = useAppStore((s) => s.closeSettings);
   const setTheme = useAppStore((s) => s.setTheme);
   const bumpSessionVersion = useAppStore((s) => s.bumpSessionVersion);
+
+  const SECTIONS: { id: Section; label: string; icon: string }[] = [
+    { id: "appearance", label: t("settings.sections.appearance"), icon: "◑" },
+    { id: "sessions", label: t("settings.sections.sessions"), icon: "≡" },
+    { id: "terminal", label: t("settings.sections.terminal"), icon: "▣" },
+    { id: "security", label: t("settings.sections.security"), icon: "⚿" },
+    { id: "updates", label: t("settings.sections.updates"), icon: "↻" },
+    { id: "about", label: t("settings.sections.about"), icon: "ⓘ" },
+  ];
 
   const [section, setSection] = useState<Section>("appearance");
   const [config, setConfig] = useState<Config | null>(null);
@@ -122,7 +125,7 @@ export function SettingsModal() {
     >
       <div className="set-card" role="dialog" aria-modal="true">
         <div className="set-header">
-          <span className="set-title">Settings</span>
+          <span className="set-title">{t("common.settings")}</span>
           <button className="set-close" onClick={close} aria-label="Close">
             ✕
           </button>
@@ -146,27 +149,27 @@ export function SettingsModal() {
           {/* Content */}
           <div className="set-content">
             {!config ? (
-              <p className="set-loading">Loading…</p>
+              <p className="set-loading">{t("common.loading")}</p>
             ) : section === "appearance" ? (
               <>
-                <Group label="Theme">
+                <Group label={t("settings.appearance.theme")}>
                   <div className="set-segment">
-                    {(["dark", "light"] as const).map((t) => (
+                    {(["dark", "light"] as const).map((th) => (
                       <button
-                        key={t}
-                        className={`set-seg-btn${config.appearance.theme === t ? " is-active" : ""}`}
+                        key={th}
+                        className={`set-seg-btn${config.appearance.theme === th ? " is-active" : ""}`}
                         onClick={() => {
-                          setTheme(t);
-                          setAppearance({ theme: t });
+                          setTheme(th);
+                          setAppearance({ theme: th });
                         }}
                       >
-                        {t === "dark" ? "Dark" : "Light"}
+                        {th === "dark" ? t("settings.appearance.theme_dark") : t("settings.appearance.theme_light")}
                       </button>
                     ))}
                   </div>
                 </Group>
 
-                <Group label="Accent color" hint="Changes the highlight color across the app.">
+                <Group label={t("settings.appearance.accent")}>
                   <div className="set-swatches">
                     {ACCENT_PRESETS.map((a) => (
                       <button
@@ -177,7 +180,7 @@ export function SettingsModal() {
                             : ""
                         }`}
                         style={{ background: a.value, color: a.value }}
-                        title={a.label}
+                        data-tooltip={a.label}
                         aria-label={a.label}
                         onClick={() => chooseAccent(a.value)}
                       />
@@ -186,8 +189,8 @@ export function SettingsModal() {
                 </Group>
 
                 <Toggle
-                  label="Animations"
-                  hint="UI motion and transitions."
+                  label={t("settings.appearance.animations")}
+                  hint={t("settings.appearance.animations_hint")}
                   checked={config.appearance.animations}
                   onChange={(v) => {
                     applyAnimations(v);
@@ -195,13 +198,13 @@ export function SettingsModal() {
                   }}
                 />
                 <Toggle
-                  label="Blur effects"
-                  hint="Backdrop blur where the OS supports it."
+                  label={t("settings.appearance.blur")}
+                  hint={t("settings.appearance.blur_hint")}
                   checked={config.appearance.blur_effects}
                   onChange={(v) => setAppearance({ blur_effects: v })}
                 />
 
-                <Group label={`Window opacity — ${Math.round(config.appearance.window_opacity * 100)}%`}>
+                <Group label={`${t("settings.appearance.opacity")} — ${Math.round(config.appearance.window_opacity * 100)}%`}>
                   <input
                     type="range"
                     className="set-range"
@@ -212,37 +215,54 @@ export function SettingsModal() {
                     onChange={(e) => setAppearance({ window_opacity: Number(e.target.value) })}
                   />
                 </Group>
+
+                <Group label={t("settings.appearance.language")} hint={t("settings.appearance.language_hint")}>
+                  <div className="set-segment">
+                    {(["en", "es"] as const).map((lang) => (
+                      <button
+                        key={lang}
+                        className={`set-seg-btn${(config.appearance.language ?? "en") === lang ? " is-active" : ""}`}
+                        onClick={() => {
+                          i18n.changeLanguage(lang);
+                          setAppearance({ language: lang });
+                        }}
+                      >
+                        {lang === "en" ? "English" : "Español"}
+                      </button>
+                    ))}
+                  </div>
+                </Group>
               </>
             ) : section === "sessions" ? (
               <>
                 <Group
-                  label="Import sessions"
-                  hint="Load sessions from a session file. Passwords are not included."
+                  label={t("settings.sessions.import")}
+                  hint={t("settings.sessions.import_hint")}
                 >
                   <button className="set-btn" onClick={doImport}>
-                    Import sessions…
+                    {t("settings.sessions.import_btn")}
                   </button>
                 </Group>
                 <Group
-                  label="Export sessions"
-                  hint="Save all your sessions to a session file (without passwords)."
+                  label={t("settings.sessions.export")}
+                  hint={t("settings.sessions.export_hint")}
                 >
                   <button className="set-btn" onClick={doExport}>
-                    Export sessions…
+                    {t("settings.sessions.export_btn")}
                   </button>
                 </Group>
                 {sessionMsg && <p className="set-session-msg">{sessionMsg}</p>}
               </>
             ) : section === "terminal" ? (
               <>
-                <Group label="Font family">
+                <Group label={t("settings.terminal.font_family")}>
                   <input
                     className="set-input"
                     value={config.terminal.font_family}
                     onChange={(e) => setTerminal({ font_family: e.target.value })}
                   />
                 </Group>
-                <Group label="Font size">
+                <Group label={t("settings.terminal.font_size")}>
                   <input
                     type="number"
                     className="set-input set-input--sm"
@@ -252,7 +272,7 @@ export function SettingsModal() {
                     onChange={(e) => setTerminal({ font_size: Number(e.target.value) })}
                   />
                 </Group>
-                <Group label="Default shell">
+                <Group label={t("settings.terminal.default_shell")}>
                   <select
                     className="set-input"
                     value={config.terminal.default_shell}
@@ -265,7 +285,7 @@ export function SettingsModal() {
                     ))}
                   </select>
                 </Group>
-                <Group label="Scrollback (lines)">
+                <Group label={t("settings.terminal.scrollback")}>
                   <input
                     type="number"
                     className="set-input set-input--sm"
@@ -280,12 +300,12 @@ export function SettingsModal() {
             ) : section === "security" ? (
               <>
                 <Toggle
-                  label="Use OS keychain"
-                  hint="Store secrets in the system keychain instead of the local vault."
+                  label={t("settings.security.keychain")}
+                  hint={t("settings.security.keychain_hint")}
                   checked={config.security.use_os_keychain}
                   onChange={(v) => setSecurity({ use_os_keychain: v })}
                 />
-                <Group label="Auto-lock (minutes)" hint="0 disables auto-lock.">
+                <Group label={t("settings.security.auto_lock")} hint={t("settings.security.auto_lock_hint")}>
                   <input
                     type="number"
                     className="set-input set-input--sm"
@@ -299,11 +319,11 @@ export function SettingsModal() {
             ) : section === "updates" ? (
               <>
                 <Toggle
-                  label="Automatic update checks"
+                  label={t("settings.updates.auto_check")}
                   checked={config.updates.auto_check}
                   onChange={(v) => setUpdates({ auto_check: v })}
                 />
-                <Group label="Release channel">
+                <Group label={t("settings.updates.channel")}>
                   <div className="set-segment">
                     {(["stable", "beta"] as const).map((c) => (
                       <button
@@ -311,7 +331,7 @@ export function SettingsModal() {
                         className={`set-seg-btn${config.updates.channel === c ? " is-active" : ""}`}
                         onClick={() => setUpdates({ channel: c })}
                       >
-                        {c === "stable" ? "Stable" : "Beta"}
+                        {c === "stable" ? t("settings.updates.channel_stable") : t("settings.updates.channel_beta")}
                       </button>
                     ))}
                   </div>
@@ -330,8 +350,7 @@ export function SettingsModal() {
                 </svg>
                 <div className="set-about-name">Voltaic</div>
                 <p className="set-about-text">
-                  A MobaXterm-class connection manager. Preferences are stored as TOML and applied
-                  instantly.
+                  {t("settings.about.description")}
                 </p>
               </div>
             )}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import dockerLogo from "../assets/icons/docker.svg?raw";
 import ftpLogo from "../assets/icons/ftp.svg?raw";
 import kubernetesLogo from "../assets/icons/kubernetes.svg?raw";
@@ -30,16 +31,16 @@ interface ProtoMeta {
   implemented: boolean;
 }
 
-const PROTOCOLS: ProtoMeta[] = [
-  { id: "local_shell", label: "Terminal", description: "Local shell session", phase: 1, implemented: true },
-  { id: "ssh", label: "SSH", description: "Encrypted remote terminal", phase: 2, implemented: true },
-  { id: "sftp", label: "SFTP", description: "SSH file transfer", phase: 2, implemented: true },
-  { id: "ftp", label: "FTP", description: "Classic file transfer", phase: 3, implemented: true },
-  { id: "serial", label: "Serial", description: "COM / serial port console", phase: 3, implemented: true },
-  { id: "rdp", label: "RDP", description: "Remote Desktop Protocol", phase: 3, implemented: true },
-  { id: "vnc", label: "VNC", description: "Virtual Network Computing", phase: 3, implemented: true },
-  { id: "docker", label: "Docker", description: "Container shell", phase: 4, implemented: true },
-  { id: "kubernetes", label: "Kubernetes", description: "K8s pod shell", phase: 4, implemented: true },
+const PROTOCOL_DEFS: { id: ProtoMeta["id"]; label: string; phase: number; implemented: boolean }[] = [
+  { id: "local_shell", label: "Terminal", phase: 1, implemented: true },
+  { id: "ssh", label: "SSH", phase: 2, implemented: true },
+  { id: "sftp", label: "SFTP", phase: 2, implemented: true },
+  { id: "ftp", label: "FTP", phase: 3, implemented: true },
+  { id: "serial", label: "Serial", phase: 3, implemented: true },
+  { id: "rdp", label: "RDP", phase: 3, implemented: true },
+  { id: "vnc", label: "VNC", phase: 3, implemented: true },
+  { id: "docker", label: "Docker", phase: 4, implemented: true },
+  { id: "kubernetes", label: "Kubernetes", phase: 4, implemented: true },
 ];
 
 // Brand logos shipped as raw SVG; the wrapper just centers and lets CSS size them.
@@ -117,10 +118,31 @@ function ProtoIcon({ id }: { id: string }) {
 type Step = "pick" | "configure";
 
 export function NewSessionModal() {
+  const { t } = useTranslation();
   const closeModal = useAppStore((s) => s.closeNewSessionModal);
   const open = useAppStore((s) => s.newSessionModalOpen);
   const openTab = useAppStore((s) => s.openTab);
   const bumpSessionVersion = useAppStore((s) => s.bumpSessionVersion);
+
+  const PROTO_DESC_KEYS = {
+    local_shell: "newSession.proto_terminal_desc",
+    ssh: "newSession.proto_ssh_desc",
+    sftp: "newSession.proto_sftp_desc",
+    ftp: "newSession.proto_ftp_desc",
+    serial: "newSession.proto_serial_desc",
+    rdp: "newSession.proto_rdp_desc",
+    vnc: "newSession.proto_vnc_desc",
+    docker: "newSession.proto_docker_desc",
+    kubernetes: "newSession.proto_k8s_desc",
+  } as const;
+
+  const PROTOCOLS: ProtoMeta[] = PROTOCOL_DEFS.map((p) => ({
+    ...p,
+    description: t(
+      (PROTO_DESC_KEYS as Record<string, (typeof PROTO_DESC_KEYS)[keyof typeof PROTO_DESC_KEYS]>)[p.id]
+        ?? "newSession.proto_terminal_desc",
+    ),
+  }));
 
   const [step, setStep] = useState<Step>("pick");
   const [proto, setProto] = useState<ProtoMeta | null>(null);
@@ -295,7 +317,7 @@ export function NewSessionModal() {
       {browseError && <p className="nsm-error">{browseError}</p>}
       {browseList &&
         (browseList.length === 0 ? (
-          <p className="nsm-note">Nothing running found.</p>
+          <p className="nsm-note">{t("newSession.nothing_running")}</p>
         ) : (
           <div className="nsm-picker">
             {browseList.map((it) => (
@@ -316,7 +338,7 @@ export function NewSessionModal() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError("Session name is required.");
+      setError(t("newSession.error_name_required"));
       return;
     }
     const isSsh = proto?.id === "ssh" || proto?.id === "sftp";
@@ -327,15 +349,15 @@ export function NewSessionModal() {
     const isK8s = proto?.id === "kubernetes";
     const needsHost = isSsh || isRdp || isVnc || isFtp;
     if (needsHost && !host.trim()) {
-      setError("Host is required.");
+      setError(t("newSession.error_host_required"));
       return;
     }
     if (isDocker && !container.trim()) {
-      setError("Container name or id is required.");
+      setError(t("newSession.error_container_required"));
       return;
     }
     if (isK8s && !pod.trim()) {
-      setError("Pod name is required.");
+      setError(t("newSession.error_pod_required"));
       return;
     }
 
@@ -434,7 +456,7 @@ export function NewSessionModal() {
             <button
               className="nsm-header-back"
               onClick={() => { setStep("pick"); setError(""); }}
-              aria-label="Back to protocols"
+              aria-label={t("newSession.back")}
             >
               ←
             </button>
@@ -446,15 +468,15 @@ export function NewSessionModal() {
           )}
           <div className="nsm-header-text">
             <span className="nsm-title">
-              {step === "pick" ? "New Session" : proto?.label ?? ""}
+              {step === "pick" ? t("newSession.title") : proto?.label ?? ""}
             </span>
             <span className="nsm-subtitle">
               {step === "pick"
-                ? "Choose a protocol to get started"
+                ? t("newSession.choose_protocol")
                 : proto?.description ?? ""}
             </span>
           </div>
-          <button className="nsm-close" onClick={close} aria-label="Close">✕</button>
+          <button className="nsm-close" onClick={close} aria-label={t("common.close")}>✕</button>
         </div>
 
         {/* Step 1: protocol picker */}
@@ -472,7 +494,7 @@ export function NewSessionModal() {
                 <span className="nsm-proto-label">{p.label}</span>
                 <span className="nsm-proto-desc">{p.description}</span>
                 {!p.implemented && (
-                  <span className="nsm-proto-badge">Phase {p.phase}</span>
+                  <span className="nsm-proto-badge">{t("newSession.phase", { n: p.phase })}</span>
                 )}
               </button>
             ))}
@@ -486,22 +508,21 @@ export function NewSessionModal() {
               <div className="nsm-soon-msg">
                 <ProtoIcon id={proto.id} />
                 <p>
-                  <strong>{proto.label}</strong> is coming in Phase {proto.phase}.
-                  <br />
-                  You can save this session now — it will be available once the protocol is implemented.
+                  <strong>{proto.label}</strong>{" "}
+                  {t("newSession.coming_soon", { phase: proto.phase })}
                 </p>
               </div>
             ) : null}
 
             <div className="nsm-field">
-              <label htmlFor="nsm-name">Session name</label>
+              <label htmlFor="nsm-name">{t("newSession.session_name")}</label>
               <input
                 id="nsm-name"
                 ref={nameRef}
                 className="nsm-input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={`My ${proto.label} session`}
+                placeholder={t("newSession.ph_session_name", { protocol: proto.label })}
                 onKeyDown={(e) => e.key === "Enter" && handleSave()}
               />
             </div>
@@ -510,17 +531,17 @@ export function NewSessionModal() {
               <>
                 <div className="nsm-row">
                   <div className="nsm-field">
-                    <label htmlFor="nsm-host">Host</label>
+                    <label htmlFor="nsm-host">{t("form.host")}</label>
                     <input
                       id="nsm-host"
                       className="nsm-input"
                       value={host}
                       onChange={(e) => setHost(e.target.value)}
-                      placeholder="example.com"
+                      placeholder={t("form.ph_host")}
                     />
                   </div>
                   <div className="nsm-field">
-                    <label htmlFor="nsm-port">Port</label>
+                    <label htmlFor="nsm-port">{t("form.port")}</label>
                     <input
                       id="nsm-port"
                       className="nsm-input"
@@ -535,13 +556,13 @@ export function NewSessionModal() {
 
                 {!isVnc && (
                   <div className="nsm-field">
-                    <label htmlFor="nsm-user">Username</label>
+                    <label htmlFor="nsm-user">{t("form.username")}</label>
                     <input
                       id="nsm-user"
                       className="nsm-input"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder={isFtp ? "anonymous" : "root"}
+                      placeholder={isFtp ? "anonymous" : t("form.ph_root")}
                     />
                   </div>
                 )}
@@ -556,21 +577,21 @@ export function NewSessionModal() {
                       className={`nsm-auth-tab${authMethod === m ? " is-active" : ""}`}
                       onClick={() => setAuthMethod(m)}
                     >
-                      {m === "password" ? "Password" : m === "key" ? "Private key" : "Agent"}
+                      {m === "password" ? t("form.auth_password") : m === "key" ? t("form.auth_key") : t("form.auth_agent")}
                     </button>
                   ))}
                 </div>
 
                 {authMethod === "password" && (
                   <div className="nsm-field">
-                    <label htmlFor="nsm-pass">Password</label>
+                    <label htmlFor="nsm-pass">{t("form.password")}</label>
                     <input
                       id="nsm-pass"
                       className="nsm-input"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Leave empty to enter on connect"
+                      placeholder={t("form.ph_leave_empty")}
                     />
                   </div>
                 )}
@@ -578,18 +599,18 @@ export function NewSessionModal() {
                 {authMethod === "key" && (
                   <>
                     <div className="nsm-field">
-                      <label htmlFor="nsm-key">Private key (PEM / OpenSSH)</label>
+                      <label htmlFor="nsm-key">{t("form.private_key")}</label>
                       <textarea
                         id="nsm-key"
                         className="nsm-input nsm-textarea"
                         value={privateKey}
                         onChange={(e) => setPrivateKey(e.target.value)}
-                        placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+                        placeholder={t("form.ph_private_key")}
                         rows={4}
                       />
                     </div>
                     <div className="nsm-field">
-                      <label htmlFor="nsm-phrase">Passphrase (optional)</label>
+                      <label htmlFor="nsm-phrase">{t("form.passphrase_optional")}</label>
                       <input
                         id="nsm-phrase"
                         className="nsm-input"
@@ -603,9 +624,7 @@ export function NewSessionModal() {
 
                 {authMethod === "agent" && (
                   <p className="nsm-note">
-                    Uses identities from your running SSH agent — <code>ssh-agent</code>{" "}
-                    via <code>$SSH_AUTH_SOCK</code> on macOS/Linux, or the OpenSSH
-                    agent named pipe on Windows.
+                    <Trans i18nKey="newSession.agent_note" components={{ code: <code /> }} />
                   </p>
                 )}
                   </>
@@ -614,25 +633,25 @@ export function NewSessionModal() {
                 {needsPassword && (
                   <>
                     <div className="nsm-field">
-                      <label htmlFor="nsm-rdp-pass">Password</label>
+                      <label htmlFor="nsm-rdp-pass">{t("form.password")}</label>
                       <input
                         id="nsm-rdp-pass"
                         className="nsm-input"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Leave empty to enter on connect"
+                        placeholder={isVnc ? t("form.ph_vnc_pass") : t("form.ph_leave_empty")}
                       />
                     </div>
                     {isRdp && (
                       <div className="nsm-field">
-                        <label htmlFor="nsm-domain">Domain (optional)</label>
+                        <label htmlFor="nsm-domain">{t("form.domain_optional")}</label>
                         <input
                           id="nsm-domain"
                           className="nsm-input"
                           value={domain}
                           onChange={(e) => setDomain(e.target.value)}
-                          placeholder="WORKGROUP"
+                          placeholder={t("form.ph_domain")}
                         />
                       </div>
                     )}
@@ -645,14 +664,14 @@ export function NewSessionModal() {
               <>
                 <div className="nsm-field">
                   <div className="nsm-field-head">
-                    <label htmlFor="nsm-container">Container (name or id)</label>
+                    <label htmlFor="nsm-container">{t("newSession.container")}</label>
                     <button
                       type="button"
                       className="nsm-browse"
                       onClick={browseContainers}
                       disabled={browsing}
                     >
-                      {browsing ? "Loading…" : "Browse running"}
+                      {browsing ? t("common.loading") : t("newSession.browse_running")}
                     </button>
                   </div>
                   <input
@@ -660,35 +679,35 @@ export function NewSessionModal() {
                     className="nsm-input"
                     value={container}
                     onChange={(e) => setContainer(e.target.value)}
-                    placeholder="my-container"
+                    placeholder={t("newSession.ph_container")}
                     onKeyDown={(e) => e.key === "Enter" && handleSave()}
                   />
                   {renderBrowse(setContainer)}
                 </div>
                 <div className="nsm-row">
                   <div className="nsm-field">
-                    <label htmlFor="nsm-shell">Shell</label>
+                    <label htmlFor="nsm-shell">{t("newSession.shell")}</label>
                     <input
                       id="nsm-shell"
                       className="nsm-input"
                       value={shellProg}
                       onChange={(e) => setShellProg(e.target.value)}
-                      placeholder="sh"
+                      placeholder={t("newSession.ph_shell")}
                     />
                   </div>
                   <div className="nsm-field">
-                    <label htmlFor="nsm-dhost">Docker host (optional)</label>
+                    <label htmlFor="nsm-dhost">{t("newSession.docker_host_optional")}</label>
                     <input
                       id="nsm-dhost"
                       className="nsm-input"
                       value={dockerHost}
                       onChange={(e) => setDockerHost(e.target.value)}
-                      placeholder="ssh://user@host"
+                      placeholder={t("newSession.ph_docker_host")}
                     />
                   </div>
                 </div>
                 <p className="nsm-note">
-                  Runs <code>docker exec -it</code> via the local Docker CLI.
+                  <Trans i18nKey="newSession.docker_note" components={{ code: <code /> }} />
                 </p>
               </>
             )}
@@ -698,14 +717,14 @@ export function NewSessionModal() {
                 <div className="nsm-row">
                   <div className="nsm-field">
                     <div className="nsm-field-head">
-                      <label htmlFor="nsm-pod">Pod</label>
+                      <label htmlFor="nsm-pod">{t("newSession.pod")}</label>
                       <button
                         type="button"
                         className="nsm-browse"
                         onClick={browsePods}
                         disabled={browsing}
                       >
-                        {browsing ? "Loading…" : "Browse pods"}
+                        {browsing ? t("common.loading") : t("newSession.browse_pods")}
                       </button>
                     </div>
                     <input
@@ -713,56 +732,56 @@ export function NewSessionModal() {
                       className="nsm-input"
                       value={pod}
                       onChange={(e) => setPod(e.target.value)}
-                      placeholder="my-pod"
+                      placeholder={t("newSession.ph_pod")}
                       onKeyDown={(e) => e.key === "Enter" && handleSave()}
                     />
                   </div>
                   <div className="nsm-field">
-                    <label htmlFor="nsm-ns">Namespace (optional)</label>
+                    <label htmlFor="nsm-ns">{t("newSession.namespace_optional")}</label>
                     <input
                       id="nsm-ns"
                       className="nsm-input"
                       value={namespace}
                       onChange={(e) => setNamespace(e.target.value)}
-                      placeholder="default"
+                      placeholder={t("newSession.ph_namespace")}
                     />
                   </div>
                 </div>
                 {renderBrowse(setPod)}
                 <div className="nsm-row">
                   <div className="nsm-field">
-                    <label htmlFor="nsm-kcontainer">Container (optional)</label>
+                    <label htmlFor="nsm-kcontainer">{t("newSession.container_optional")}</label>
                     <input
                       id="nsm-kcontainer"
                       className="nsm-input"
                       value={k8sContainer}
                       onChange={(e) => setK8sContainer(e.target.value)}
-                      placeholder="main"
+                      placeholder={t("newSession.ph_k8s_container")}
                     />
                   </div>
                   <div className="nsm-field">
-                    <label htmlFor="nsm-kctx">Context (optional)</label>
+                    <label htmlFor="nsm-kctx">{t("newSession.context_optional")}</label>
                     <input
                       id="nsm-kctx"
                       className="nsm-input"
                       value={k8sContext}
                       onChange={(e) => setK8sContext(e.target.value)}
-                      placeholder="current"
+                      placeholder={t("newSession.ph_k8s_context")}
                     />
                   </div>
                 </div>
                 <div className="nsm-field">
-                  <label htmlFor="nsm-kshell">Shell</label>
+                  <label htmlFor="nsm-kshell">{t("newSession.shell")}</label>
                   <input
                     id="nsm-kshell"
                     className="nsm-input"
                     value={shellProg}
                     onChange={(e) => setShellProg(e.target.value)}
-                    placeholder="sh"
+                    placeholder={t("newSession.ph_shell")}
                   />
                 </div>
                 <p className="nsm-note">
-                  Runs <code>kubectl exec -it</code> via the local kubectl CLI.
+                  <Trans i18nKey="newSession.k8s_note" components={{ code: <code /> }} />
                 </p>
               </>
             )}
@@ -771,7 +790,7 @@ export function NewSessionModal() {
 
             <div className="nsm-footer">
               <button className="nsm-btn-cancel" onClick={close}>
-                Cancel
+                {t("newSession.cancel")}
               </button>
               <button
                 className="nsm-btn-save"
@@ -779,10 +798,10 @@ export function NewSessionModal() {
                 disabled={saving}
               >
                 {saving
-                  ? "Saving…"
+                  ? t("newSession.saving")
                   : needsHost || isDocker || isK8s
-                    ? "Save & Connect"
-                    : "Save Session"}
+                    ? t("newSession.save_connect")
+                    : t("newSession.save_session")}
               </button>
             </div>
           </div>

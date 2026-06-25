@@ -1,6 +1,12 @@
 // TypeScript mirrors of the serde types exposed by voltaic-core / voltaic-settings.
 // Keep these in lockstep with the Rust definitions — they are the IPC contract.
 
+/** A folder with optional display color. Mirrors `voltaic_settings::FolderRecord`. */
+export interface FolderRecord {
+  name: string;
+  color: string | null;
+}
+
 export type Protocol =
   | "local_shell"
   | "ssh"
@@ -46,6 +52,7 @@ export interface Appearance {
   blur_effects: boolean;
   animations: boolean;
   ui_font: string;
+  language: "en" | "es";
 }
 
 export interface TerminalConfig {

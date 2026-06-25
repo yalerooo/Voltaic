@@ -66,6 +66,92 @@ input {
   color: var(--color-ink);
 }
 
+/* ---- Tooltips ---- */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(3px);
+  background: var(--color-surface-elevated);
+  color: var(--color-body-strong);
+  font: var(--caption);
+  white-space: nowrap;
+  max-width: 220px;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-hairline-strong);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+  z-index: 9999;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 350ms;
+}
+
+[data-tooltip][data-tooltip-pos="bottom"]::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-3px);
+}
+
+[data-tooltip][data-tooltip-pos="bottom"]:hover::after,
+[data-tooltip][data-tooltip-pos="bottom"]:focus-visible::after {
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 350ms;
+}
+
+[data-tooltip][data-tooltip-pos="right"]::after {
+  left: calc(100% + 8px);
+  bottom: 50%;
+  transform: translateY(50%) translateX(-3px);
+}
+
+[data-tooltip][data-tooltip-pos="right"]:hover::after,
+[data-tooltip][data-tooltip-pos="right"]:focus-visible::after {
+  transform: translateY(50%) translateX(0);
+  transition-delay: 350ms;
+}
+
+/* Left of element — for buttons at the right edge of overflow:hidden containers */
+[data-tooltip][data-tooltip-pos="left"]::after {
+  right: calc(100% + 8px);
+  left: auto;
+  bottom: 50%;
+  transform: translateY(50%) translateX(3px);
+}
+
+[data-tooltip][data-tooltip-pos="left"]:hover::after,
+[data-tooltip][data-tooltip-pos="left"]:focus-visible::after {
+  transform: translateY(50%) translateX(0);
+  transition-delay: 350ms;
+}
+
+/* Below, right-aligned — for buttons at the right edge of the viewport */
+[data-tooltip][data-tooltip-pos="bottom-end"]::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(-3px);
+}
+
+[data-tooltip][data-tooltip-pos="bottom-end"]:hover::after,
+[data-tooltip][data-tooltip-pos="bottom-end"]:focus-visible::after {
+  transform: translateX(0) translateY(0);
+  transition-delay: 350ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

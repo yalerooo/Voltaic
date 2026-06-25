@@ -8,6 +8,7 @@ import type {
   Config,
   ContainerInfo,
   DockerConfig,
+  FolderRecord,
   FtpConfig,
   FtpConnection,
   FtpEntry,
@@ -39,6 +40,13 @@ export const ipc = {
   // -- Configuration --
   getConfig: () => invoke<Config>("get_config"),
   saveConfig: (config: Config) => invoke<void>("save_config", { config }),
+
+  // -- Folders --
+  listFolders: () => invoke<FolderRecord[]>("list_folders"),
+  saveFolder: (folder: FolderRecord) => invoke<void>("save_folder", { folder }),
+  deleteFolder: (name: string) => invoke<void>("delete_folder", { name }),
+  renameFolder: (oldName: string, newName: string) =>
+    invoke<void>("rename_folder", { oldName, newName }),
 
   // -- Sessions --
   listSessions: () => invoke<Session[]>("list_sessions"),

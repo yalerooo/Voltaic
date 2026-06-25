@@ -4,6 +4,7 @@
 // Transfers use the dialog plugin for local path selection.
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { ipc } from "../lib/ipc";
 import { useFileDrop } from "../lib/useFileDrop";
@@ -30,6 +31,7 @@ const joinPath = (dir: string, name: string) => `${dir.replace(/\/$/, "")}/${nam
 const basename = (p: string) => p.split(/[/\\]/).pop() ?? p;
 
 export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
+  const { t } = useTranslation();
   const [id, setId] = useState<string | null>(null);
   const [home, setHome] = useState("/");
   const [cwd, setCwd] = useState("/");
@@ -178,25 +180,25 @@ export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
   const openRowMenu = (entry: SftpEntry, x: number, y: number) => {
     const items: CtxItem[] = [
       entry.kind === "dir"
-        ? { kind: "action", label: "Open", icon: <IconUp />, onClick: () => navigate(entry) }
-        : { kind: "action", label: "Download", icon: <IconDownload />, onClick: () => download(entry) },
-      { kind: "action", label: "Rename", icon: <IconRename />, onClick: () => rename(entry) },
+        ? { kind: "action", label: t("files.open"), icon: <IconUp />, onClick: () => navigate(entry) }
+        : { kind: "action", label: t("common.download"), icon: <IconDownload />, onClick: () => download(entry) },
+      { kind: "action", label: t("common.rename"), icon: <IconRename />, onClick: () => rename(entry) },
       ...(entry.kind === "file"
         ? [
             {
               kind: "action" as const,
-              label: "Copy",
+              label: t("files.copy"),
               icon: <IconCopy />,
               onClick: () => setClipboard({ path: entry.path, name: entry.name }),
             },
           ]
         : []),
       ...(clipboard
-        ? [{ kind: "action" as const, label: `Paste "${clipboard.name}"`, icon: <IconPaste />, onClick: paste }]
+        ? [{ kind: "action" as const, label: t("sftp.paste_tooltip", { name: clipboard.name }), icon: <IconPaste />, onClick: paste }]
         : []),
-      { kind: "action", label: "Copy path", icon: <IconLink />, onClick: () => copyPath(entry) },
+      { kind: "action", label: t("common.copy_path"), icon: <IconLink />, onClick: () => copyPath(entry) },
       { kind: "sep" },
-      { kind: "action", label: "Delete", danger: true, icon: <IconTrash />, onClick: () => remove(entry) },
+      { kind: "action", label: t("common.delete"), danger: true, icon: <IconTrash />, onClick: () => remove(entry) },
     ];
     setCtx({ x, y, items });
   };
@@ -204,13 +206,13 @@ export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
   const isOver = useFileDrop(listRef, !!id, uploadPaths);
 
   if (connecting) {
-    return <div className="sftp__connecting">Connecting…</div>;
+    return <div className="sftp__connecting">{t("form.connecting")}</div>;
   }
 
   if (!id) {
     return (
       <SshConnectForm
-        title={initialConfig ? "Reconnect SFTP" : "New SFTP session"}
+        title={initialConfig ? t("sftp.reconnect") : t("sftp.new_session")}
         cta="Connect"
         onConnect={connect}
         initialConfig={initialConfig}
@@ -222,30 +224,30 @@ export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
   return (
     <div className="sftp">
       <div className="sftp__toolbar">
-        <button className="sftp__btn" onClick={() => refresh(id, home)} title="Home">
+        <button className="sftp__btn" onClick={() => refresh(id, home)} data-tooltip={t("sftp.home_tooltip")} data-tooltip-pos="bottom">
           <IconHome />
         </button>
-        <button className="sftp__btn" onClick={goUp} disabled={cwd === "/"} title="Up one level">
+        <button className="sftp__btn" onClick={goUp} disabled={cwd === "/"} data-tooltip={t("sftp.up_tooltip")} data-tooltip-pos="bottom">
           <IconUp />
         </button>
-        <button className="sftp__btn" onClick={() => refresh(id, cwd)} title="Refresh">
+        <button className="sftp__btn" onClick={() => refresh(id, cwd)} data-tooltip={t("sftp.refresh_tooltip")} data-tooltip-pos="bottom">
           <IconRefresh />
         </button>
-        <code className="sftp__path" title={cwd}>
+        <code className="sftp__path" data-tooltip={cwd} data-tooltip-pos="bottom">
           {cwd}
         </code>
         <div className="sftp__spacer" />
         {clipboard && (
-          <button className="sftp__btn" onClick={paste} disabled={busy} title={`Paste "${clipboard.name}"`}>
+          <button className="sftp__btn" onClick={paste} disabled={busy} data-tooltip={t("sftp.paste_tooltip", { name: clipboard.name })} data-tooltip-pos="bottom">
             <IconPaste />
           </button>
         )}
-        <button className="sftp__btn" onClick={mkdir} disabled={busy} title="New folder">
+        <button className="sftp__btn" onClick={mkdir} disabled={busy} data-tooltip={t("sftp.new_folder_tooltip")} data-tooltip-pos="bottom">
           <IconNewFolder />
         </button>
         <button className="sftp__btn sftp__btn--primary" onClick={uploadDialog} disabled={busy}>
           <IconUpload size={15} />
-          Upload
+          {t("common.upload")}
         </button>
       </div>
 
@@ -258,21 +260,21 @@ export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
           if (e.target === e.currentTarget) {
             e.preventDefault();
             const items: CtxItem[] = [
-              { kind: "action", label: "New folder", icon: <IconNewFolder />, onClick: mkdir },
-              { kind: "action", label: "Upload files…", icon: <IconUpload />, onClick: uploadDialog },
+              { kind: "action", label: t("sftp.new_folder_tooltip"), icon: <IconNewFolder />, onClick: mkdir },
+              { kind: "action", label: t("files.upload_files"), icon: <IconUpload />, onClick: uploadDialog },
               ...(clipboard
-                ? [{ kind: "action" as const, label: `Paste "${clipboard.name}"`, icon: <IconPaste />, onClick: paste }]
+                ? [{ kind: "action" as const, label: t("sftp.paste_tooltip", { name: clipboard.name }), icon: <IconPaste />, onClick: paste }]
                 : []),
               { kind: "sep" },
-              { kind: "action", label: "Refresh", icon: <IconRefresh />, onClick: () => refresh(id, cwd) },
+              { kind: "action", label: t("common.refresh"), icon: <IconRefresh />, onClick: () => refresh(id, cwd) },
             ];
             setCtx({ x: e.clientX, y: e.clientY, items });
           }
         }}
       >
         <div className="sftp__head">
-          <span>Name</span>
-          <span>Size</span>
+          <span>{t("files.col_name")}</span>
+          <span>{t("files.col_size")}</span>
           <span />
         </div>
         {entries.map((entry) => (
@@ -298,18 +300,18 @@ export function SftpBrowser({ initialConfig }: { initialConfig?: SshConfig }) {
             <span className="sftp__actions">
               {entry.kind !== "dir" && (
                 <button className="sftp__link" onClick={() => download(entry)}>
-                  Download
+                  {t("common.download")}
                 </button>
               )}
               <button className="sftp__link sftp__link--danger" onClick={() => remove(entry)}>
-                Delete
+                {t("common.delete")}
               </button>
             </span>
           </div>
         ))}
-        {entries.length === 0 && <p className="sftp__empty">Empty directory</p>}
+        {entries.length === 0 && <p className="sftp__empty">{t("files.empty_dir")}</p>}
 
-        {isOver && <div className="sftp__drop-hint">Drop files to upload to {cwd}</div>}
+        {isOver && <div className="sftp__drop-hint">{t("files.drop_upload")}</div>}
       </div>
 
       {ctx && <ContextMenu x={ctx.x} y={ctx.y} items={ctx.items} onClose={() => setCtx(null)} />}

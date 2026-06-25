@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ipc, isTauri } from "../lib/ipc";
 import type {
   DockerConfig,
+  FolderRecord,
   FtpConfig,
   KubernetesConfig,
   Protocol,
@@ -77,6 +79,7 @@ function SessionRow({
   onToggleFavorite: () => void;
   onDragStart: (e: React.MouseEvent) => void;
 }) {
+  const { t } = useTranslation();
   const btnRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(session.name);
@@ -163,7 +166,8 @@ function SessionRow({
           e.stopPropagation();
           onToggleFavorite();
         }}
-        title={session.favorite ? "Remove from favorites" : "Add to favorites"}
+        data-tooltip={session.favorite ? t("sidebar.remove_from_favorites") : t("sidebar.add_to_favorites")}
+        data-tooltip-pos="left"
         aria-pressed={session.favorite}
       >
         {session.favorite ? "★" : "☆"}
@@ -172,7 +176,8 @@ function SessionRow({
         ref={btnRef}
         className="sb-session__more"
         onClick={handleMenu}
-        title="More options"
+        data-tooltip={t("sidebar.more_options")}
+        data-tooltip-pos="left"
       >
         ⋮
       </button>
@@ -303,38 +308,6 @@ function FolderNode({
 type SidebarView = "sessions" | "files";
 type SortMode = "name" | "recent" | "favorites";
 
-const FOLDERS_KEY = "voltaic:folders";
-
-function loadExtraFolders(): string[] {
-  try {
-    const raw = localStorage.getItem(FOLDERS_KEY);
-    const arr = raw ? (JSON.parse(raw) as unknown) : [];
-    return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveExtraFolders(folders: string[]) {
-  localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
-}
-
-const COLORS_KEY = "voltaic:folder-colors";
-
-function loadFolderColors(): Record<string, string> {
-  try {
-    const raw = localStorage.getItem(COLORS_KEY);
-    const obj = raw ? (JSON.parse(raw) as unknown) : {};
-    return obj && typeof obj === "object" ? (obj as Record<string, string>) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveFolderColors(map: Record<string, string>) {
-  localStorage.setItem(COLORS_KEY, JSON.stringify(map));
-}
-
 // Palette offered for folder personalization (pastels + default yellow + white).
 const FOLDER_COLORS: { value: string | null; label: string }[] = [
   { value: null, label: "Default" },
@@ -421,6 +394,7 @@ function useSidebarWidth() {
 }
 
 export function Sidebar() {
+  const { t } = useTranslation();
   const openTab = useAppStore((s) => s.openTab);
   const openNewSessionModal = useAppStore((s) => s.openNewSessionModal);
   const sessionListVersion = useAppStore((s) => s.sessionListVersion);
@@ -429,6 +403,7 @@ export function Sidebar() {
   const activeTabId = useAppStore((s) => s.activeTabId);
 
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [folderRecords, setFolderRecords] = useState<FolderRecord[]>([]);
   const [ctx, setCtx] = useState<CtxState | null>(null);
   const [view, setView] = useState<SidebarView>("sessions");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -439,13 +414,14 @@ export function Sidebar() {
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("name");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [extraFolders, setExtraFolders] = useState<string[]>(() => loadExtraFolders());
-  const [folderColors, setFolderColors] = useState<Record<string, string>>(() => loadFolderColors());
   // Pointer-based drag of a session onto a folder. (Tauri's native drag-drop
   // handler breaks HTML5 DnD inside the WebView2, so we track pointer events.)
   const [drag, setDrag] = useState<{ id: string; name: string } | null>(null);
   const [ghost, setGhost] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [dropTarget, setDropTarget] = useState<string | null>(null); // folder name | "__root__" | null
+  const [newFolderDraft, setNewFolderDraft] = useState<string | null>(null);
+  const [newFolderMoveSession, setNewFolderMoveSession] = useState<Session | null>(null);
+  const newFolderInputRef = useRef<HTMLInputElement>(null);
   const suppressClickRef = useRef(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { width, resizing, startResize } = useSidebarWidth();
@@ -480,33 +456,33 @@ export function Sidebar() {
     ipc.listSessions().then(setSessions).catch(() => setSessions([]));
   }, []);
 
+  const refreshFolders = useCallback(() => {
+    if (!isTauri) return;
+    ipc.listFolders().then(setFolderRecords).catch(() => setFolderRecords([]));
+  }, []);
+
   useEffect(() => {
     refresh();
   }, [refresh, sessionListVersion]);
+
+  useEffect(() => {
+    refreshFolders();
+  }, [refreshFolders]);
 
   // Focus the filter input the moment it is revealed.
   useEffect(() => {
     if (searchOpen) requestAnimationFrame(() => searchInputRef.current?.focus());
   }, [searchOpen]);
 
-  // Persist the list of user-created (possibly empty) folders.
-  const mutateExtraFolders = (fn: (prev: string[]) => string[]) => {
-    setExtraFolders((prev) => {
-      const next = fn(prev);
-      saveExtraFolders(next);
-      return next;
-    });
-  };
+  // Look up a folder's display color from the persisted records.
+  const folderColor = (name: string): string | undefined =>
+    folderRecords.find((f) => f.name === name)?.color ?? undefined;
 
-  // Persist folder colors. `color === null` clears the entry.
-  const setFolderColor = (folder: string, color: string | null) => {
-    setFolderColors((prev) => {
-      const next = { ...prev };
-      if (color) next[folder] = color;
-      else delete next[folder];
-      saveFolderColors(next);
-      return next;
-    });
+  // Persist a folder's color change (upserts the record).
+  const setFolderColor = async (folder: string, color: string | null) => {
+    if (!isTauri) return;
+    await ipc.saveFolder({ name: folder, color });
+    refreshFolders();
   };
 
   // Start a pointer-driven drag from a session row. A real drag only begins once
@@ -701,8 +677,9 @@ export function Sidebar() {
         kind: "action" as const,
         label: "Move to new folder…",
         onClick: () => {
-          const name = window.prompt("Folder name:");
-          if (name?.trim()) moveToFolder(s, name.trim());
+          setNewFolderMoveSession(s);
+          setNewFolderDraft("");
+          requestAnimationFrame(() => newFolderInputRef.current?.focus());
         },
       },
       { kind: "sep" },
@@ -722,7 +699,7 @@ export function Sidebar() {
         kind: "swatches",
         label: "Folder color",
         colors: FOLDER_COLORS,
-        current: folderColors[folder] ?? null,
+        current: folderColor(folder) ?? null,
         onPick: (value) => setFolderColor(folder, value),
       },
       { kind: "sep" },
@@ -744,10 +721,10 @@ export function Sidebar() {
           for (const s of toMove) {
             await ipc.saveSession({ ...s, folder_id: null });
           }
-          mutateExtraFolders((prev) => prev.filter((f) => f !== folder));
-          setFolderColor(folder, null);
+          if (isTauri) await ipc.deleteFolder(folder);
           bumpSessionVersion();
           refresh();
+          refreshFolders();
         },
       },
     ];
@@ -757,28 +734,30 @@ export function Sidebar() {
   // ---- Quick-access toolbar handlers ----
 
   const newFolder = () => {
-    const name = window.prompt("New folder name:")?.trim();
-    if (name) mutateExtraFolders((prev) => (prev.includes(name) ? prev : [...prev, name]));
+    setNewFolderDraft("");
+    setNewFolderMoveSession(null);
+    requestAnimationFrame(() => newFolderInputRef.current?.focus());
   };
 
-  // Commit an inline folder rename: move its sessions, and carry over the
-  // folder's color, collapsed state, and empty-folder entry to the new name.
+  const submitNewFolder = async (draft: string) => {
+    const name = draft.trim();
+    setNewFolderDraft(null);
+    if (!name || !isTauri) return;
+    await ipc.saveFolder({ name, color: null });
+    if (newFolderMoveSession) {
+      await moveToFolder(newFolderMoveSession, name);
+      setNewFolderMoveSession(null);
+    }
+    refreshFolders();
+  };
+
+  // Rename a folder: the backend updates the record and all session references
+  // atomically, so the frontend only needs to sync the collapsed state.
   const finishFolderRename = async (oldName: string, rawNew: string) => {
     setEditingFolder(null);
     const name = rawNew.trim();
     if (!name || name === oldName) return;
-    const toMove = sessions.filter((s) => s.folder_id === oldName);
-    for (const s of toMove) {
-      await ipc.saveSession({ ...s, folder_id: name });
-    }
-    mutateExtraFolders((prev) =>
-      prev.includes(oldName) ? [...new Set(prev.map((f) => (f === oldName ? name : f)))] : prev,
-    );
-    const color = folderColors[oldName];
-    if (color) {
-      setFolderColor(oldName, null);
-      setFolderColor(name, color);
-    }
+    if (isTauri) await ipc.renameFolder(oldName, name);
     setCollapsed((prev) => {
       if (!prev.has(oldName)) return prev;
       const next = new Set(prev);
@@ -788,6 +767,7 @@ export function Sidebar() {
     });
     bumpSessionVersion();
     refresh();
+    refreshFolders();
   };
 
   const toggleFolder = (folder: string) => {
@@ -825,10 +805,11 @@ export function Sidebar() {
 
   // Show user-created (possibly empty) folders only when not actively filtering.
   const showExtras = !q && !favoritesOnly;
+  const extraFolderNames = showExtras ? folderRecords.map((f) => f.name) : [];
   const folders = [
     ...new Set([
       ...filtered.map((s) => s.folder_id).filter(Boolean),
-      ...(showExtras ? extraFolders : []),
+      ...extraFolderNames,
     ]),
   ].sort((a, b) => (a as string).localeCompare(b as string)) as string[];
   const unfiled = sortSessions(filtered.filter((s) => !s.folder_id), sortMode);
@@ -877,21 +858,23 @@ export function Sidebar() {
         <div className="sidebar__top">
           <button className="sidebar__btn-new" onClick={openNewSessionModal}>
             <span className="sidebar__btn-plus">＋</span>
-            New Session
+            {t("sidebar.new_session")}
           </button>
           {/* Quick-access toolbar. */}
           <div className="sidebar__quickbar">
             <button
               className={`sidebar__quick-btn${searchOpen ? " is-active" : ""}`}
               onClick={() => setSearchOpen((o) => !o)}
-              title="Search sessions"
+              data-tooltip={t("sidebar.search_tooltip")}
+              data-tooltip-pos="bottom"
             >
               <IconSearch size={13} />
             </button>
             <button
               className={`sidebar__quick-btn${favoritesOnly ? " is-active" : ""}`}
               onClick={() => setFavoritesOnly((v) => !v)}
-              title="Favorites only"
+              data-tooltip={t("sidebar.favorites_tooltip")}
+              data-tooltip-pos="bottom"
             >
               <IconStar size={13} />
             </button>
@@ -901,29 +884,51 @@ export function Sidebar() {
                 const r = e.currentTarget.getBoundingClientRect();
                 openSortMenu(r.left, r.bottom + 4);
               }}
-              title="Sort sessions"
+              data-tooltip={t("sidebar.sort_tooltip")}
+              data-tooltip-pos="bottom"
             >
               <IconSort size={13} />
             </button>
-            <button className="sidebar__quick-btn" onClick={newFolder} title="New folder">
+            <button
+              className="sidebar__quick-btn"
+              onClick={newFolder}
+              data-tooltip={t("sidebar.new_folder_tooltip")}
+              data-tooltip-pos="bottom"
+            >
               <IconNewFolder size={13} />
             </button>
             <button
               className="sidebar__quick-btn"
               onClick={toggleAllFolders}
               disabled={folders.length === 0}
-              title={allCollapsed ? "Expand all folders" : "Collapse all folders"}
+              data-tooltip={allCollapsed ? t("sidebar.expand_all") : t("sidebar.collapse_all")}
+              data-tooltip-pos="bottom"
             >
               {allCollapsed ? <IconExpand size={13} /> : <IconCollapse size={13} />}
             </button>
-            <button className="sidebar__quick-btn" onClick={() => refresh()} title="Refresh">
+            <button
+              className="sidebar__quick-btn"
+              onClick={() => refresh()}
+              data-tooltip={t("sidebar.refresh_tooltip")}
+              data-tooltip-pos="bottom"
+            >
               <IconRefresh size={13} />
             </button>
             <span className="sidebar__quick-sep" />
-            <button className="sidebar__quick-btn" onClick={doImport} title="Import sessions">
+            <button
+              className="sidebar__quick-btn"
+              onClick={doImport}
+              data-tooltip={t("sidebar.import_tooltip")}
+              data-tooltip-pos="bottom"
+            >
               <IconDownload size={13} />
             </button>
-            <button className="sidebar__quick-btn" onClick={doExport} title="Export sessions">
+            <button
+              className="sidebar__quick-btn"
+              onClick={doExport}
+              data-tooltip={t("sidebar.export_tooltip")}
+              data-tooltip-pos="bottom"
+            >
               <IconUpload size={13} />
             </button>
           </div>
@@ -932,7 +937,7 @@ export function Sidebar() {
             <input
               ref={searchInputRef}
               className="sidebar__search"
-              placeholder="Filter sessions…"
+              placeholder={t("sidebar.filter_placeholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -952,17 +957,45 @@ export function Sidebar() {
         >
           {sessions.length === 0 ? (
             <div className="sidebar__empty">
-              <p>No saved sessions yet.</p>
+              <p>{t("sidebar.no_sessions")}</p>
               <button className="sidebar__empty-cta" onClick={openNewSessionModal}>
-                + Add your first session
+                {t("sidebar.add_first_session")}
               </button>
             </div>
           ) : folders.length === 0 && unfiled.length === 0 ? (
             <div className="sidebar__empty">
-              <p>{favoritesOnly || q ? "No matching sessions." : "No sessions."}</p>
+              <p>{favoritesOnly || q ? t("sidebar.no_matching") : t("sidebar.no_sessions")}</p>
             </div>
           ) : (
             <>
+              {newFolderDraft !== null && (
+                <div className="sb-folder">
+                  <div className="sb-folder__row sb-folder__row--editing">
+                    <span className="sb-folder__arrow" />
+                    <span className="sb-folder__icon">
+                      <IconFolder size={15} />
+                    </span>
+                    <input
+                      ref={newFolderInputRef}
+                      className="sb-folder__edit"
+                      placeholder={t("sidebar.folder_name_placeholder")}
+                      value={newFolderDraft}
+                      onChange={(e) => setNewFolderDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          submitNewFolder(newFolderDraft);
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          setNewFolderDraft(null);
+                          setNewFolderMoveSession(null);
+                        }
+                      }}
+                      onBlur={() => submitNewFolder(newFolderDraft)}
+                    />
+                  </div>
+                </div>
+              )}
               {folders.map((folder) => (
                 <FolderNode
                   key={folder}
@@ -972,7 +1005,7 @@ export function Sidebar() {
                     sortMode,
                   )}
                   open={isFolderOpen(folder)}
-                  color={folderColors[folder]}
+                  color={folderColor(folder)}
                   isDropTarget={dropTarget === folder}
                   draggingId={drag?.id ?? null}
                   isRenaming={editingFolder === folder}
