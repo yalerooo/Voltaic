@@ -6,6 +6,7 @@ import type {
   Protocol,
   RdpConfig,
   SerialConfig,
+  Session,
   SshConfig,
   VncConfig,
 } from "../lib/types";
@@ -36,6 +37,7 @@ interface AppState {
   paletteOpen: boolean;
   theme: "dark" | "light";
   newSessionModalOpen: boolean;
+  editingSession: Session | null;
   settingsOpen: boolean;
   sessionListVersion: number;
 
@@ -47,6 +49,8 @@ interface AppState {
   setTheme: (theme: "dark" | "light") => void;
   openNewSessionModal: () => void;
   closeNewSessionModal: () => void;
+  openEditSession: (session: Session) => void;
+  closeEditSession: () => void;
   openSettings: () => void;
   closeSettings: () => void;
   bumpSessionVersion: () => void;
@@ -58,6 +62,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   paletteOpen: false,
   theme: "dark",
   newSessionModalOpen: false,
+  editingSession: null,
   settingsOpen: false,
   sessionListVersion: 0,
 
@@ -89,6 +94,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   openNewSessionModal: () => set({ newSessionModalOpen: true }),
   closeNewSessionModal: () => set({ newSessionModalOpen: false }),
+  openEditSession: (session) => set({ editingSession: session }),
+  closeEditSession: () => set({ editingSession: null }),
   openSettings: () => set({ settingsOpen: true }),
   closeSettings: () => set({ settingsOpen: false }),
   bumpSessionVersion: () =>

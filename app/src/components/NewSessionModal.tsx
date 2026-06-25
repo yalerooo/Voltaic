@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import dockerLogo from "../assets/icons/docker.svg?raw";
 import ftpLogo from "../assets/icons/ftp.svg?raw";
@@ -6,7 +6,7 @@ import kubernetesLogo from "../assets/icons/kubernetes.svg?raw";
 import rdpLogo from "../assets/icons/rdp.svg?raw";
 import vncLogo from "../assets/icons/vnc.svg?raw";
 import { ipc, isTauri } from "../lib/ipc";
-import { stashSecrets } from "../lib/secrets";
+import { injectSecrets, stashSecrets } from "../lib/secrets";
 import type {
   DockerConfig,
   FtpConfig,
@@ -121,8 +121,11 @@ export function NewSessionModal() {
   const { t } = useTranslation();
   const closeModal = useAppStore((s) => s.closeNewSessionModal);
   const open = useAppStore((s) => s.newSessionModalOpen);
+  const editingSession = useAppStore((s) => s.editingSession);
+  const closeEditSession = useAppStore((s) => s.closeEditSession);
   const openTab = useAppStore((s) => s.openTab);
   const bumpSessionVersion = useAppStore((s) => s.bumpSessionVersion);
+  const isEditing = editingSession !== null;
 
   const PROTO_DESC_KEYS = {
     local_shell: "newSession.proto_terminal_desc",
@@ -191,8 +194,6 @@ export function NewSessionModal() {
     }
   }, [step]);
 
-  if (!open) return null;
-
   const reset = () => {
     setStep("pick");
     setProto(null);
@@ -222,7 +223,87 @@ export function NewSessionModal() {
   const close = () => {
     reset();
     closeModal();
+    closeEditSession();
   };
+
+  // Pre-fill step/proto synchronously to avoid flashing the protocol picker.
+  useLayoutEffect(() => {
+    if (!editingSession) return;
+    const protoMeta = PROTOCOLS.find((p) => p.id === editingSession.protocol);
+    if (protoMeta) {
+      setProto(protoMeta);
+      setStep("configure");
+    }
+    setName(editingSession.name);
+  }, [editingSession]);
+
+  // Asynchronously inject secrets from keychain and populate all form fields.
+  useEffect(() => {
+    if (!editingSession) return;
+    (async () => {
+      let s = editingSession;
+      if (isTauri) {
+        try { s = await injectSecrets(editingSession); } catch { /* ignore */ }
+      }
+      const opts = s.options as {
+        sshConfig?: SshConfig;
+        rdpConfig?: RdpConfig;
+        vncConfig?: VncConfig;
+        ftpConfig?: FtpConfig;
+        dockerConfig?: DockerConfig;
+        kubernetesConfig?: KubernetesConfig;
+      };
+      if (opts.sshConfig) {
+        const cfg = opts.sshConfig;
+        setHost(cfg.host ?? "");
+        setPort(String(cfg.port ?? 22));
+        const auth = cfg.auth;
+        setUsername(auth.username ?? "");
+        if (auth.method === "password") {
+          setAuthMethod("password");
+          setPassword((auth as { password?: string }).password ?? "");
+        } else if (auth.method === "key") {
+          setAuthMethod("key");
+          setPrivateKey((auth as { private_key?: string }).private_key ?? "");
+          setPassphrase((auth as { passphrase?: string }).passphrase ?? "");
+        } else {
+          setAuthMethod("agent");
+        }
+      } else if (opts.rdpConfig) {
+        const cfg = opts.rdpConfig;
+        setHost(cfg.host ?? "");
+        setPort(String(cfg.port ?? 3389));
+        setUsername(cfg.username ?? "");
+        setPassword(cfg.password ?? "");
+        setDomain(cfg.domain ?? "");
+      } else if (opts.vncConfig) {
+        const cfg = opts.vncConfig;
+        setHost(cfg.host ?? "");
+        setPort(String(cfg.port ?? 5900));
+        setPassword(cfg.password ?? "");
+      } else if (opts.ftpConfig) {
+        const cfg = opts.ftpConfig;
+        setHost(cfg.host ?? "");
+        setPort(String(cfg.port ?? 21));
+        setUsername(cfg.username ?? "");
+        setPassword(cfg.password ?? "");
+      } else if (opts.dockerConfig) {
+        const cfg = opts.dockerConfig;
+        setContainer(cfg.container ?? "");
+        setShellProg(cfg.shell ?? "sh");
+        setDockerHost((cfg.host as string | null) ?? "");
+      } else if (opts.kubernetesConfig) {
+        const cfg = opts.kubernetesConfig;
+        setPod(cfg.pod ?? "");
+        setNamespace(cfg.namespace ?? "");
+        setK8sContainer(cfg.container ?? "");
+        setK8sContext(cfg.context ?? "");
+        setShellProg(cfg.shell ?? "sh");
+      }
+    })();
+  }, [editingSession]);
+
+  if (!open && !isEditing) return null;
 
   const pickProtocol = (p: ProtoMeta) => {
     if (p.id === "local_shell") {
@@ -385,22 +466,25 @@ export function NewSessionModal() {
                   ? { kubernetesConfig: k8sCfg }
                   : {};
 
-      const session: Session = {
-        id: crypto.randomUUID(),
-        name: name.trim(),
-        protocol: proto!.id as Protocol,
-        folder_id: null,
-        tags: [],
-        favorite: false,
-        options,
-        created_at: new Date().toISOString(),
-        last_used_at: null,
-      };
+      const session: Session = isEditing
+        ? {
+            ...editingSession!,
+            name: name.trim(),
+            options,
+          }
+        : {
+            id: crypto.randomUUID(),
+            name: name.trim(),
+            protocol: proto!.id as Protocol,
+            folder_id: null,
+            tags: [],
+            favorite: false,
+            options,
+            created_at: new Date().toISOString(),
+            last_used_at: null,
+          };
 
       if (isTauri) {
-        // Externalize credentials to the OS keychain when enabled (default),
-        // persisting only a secret-free copy. The live tab below still uses the
-        // in-memory configs, so the immediate connection keeps its credentials.
         let toPersist = session;
         try {
           const cfg = await ipc.getConfig();
@@ -415,8 +499,8 @@ export function NewSessionModal() {
 
       bumpSessionVersion();
 
-      // Open the live tab for implemented protocols.
-      if (proto!.implemented) {
+      // Only open a tab for new sessions, not edits.
+      if (!isEditing && proto!.implemented) {
         openTab({
           title: name.trim(),
           kind: "session",
@@ -452,7 +536,7 @@ export function NewSessionModal() {
       <div className="nsm-card" role="dialog" aria-modal="true">
         {/* Header */}
         <div className="nsm-header">
-          {step === "configure" && (
+          {step === "configure" && !isEditing && (
             <button
               className="nsm-header-back"
               onClick={() => { setStep("pick"); setError(""); }}
@@ -468,10 +552,14 @@ export function NewSessionModal() {
           )}
           <div className="nsm-header-text">
             <span className="nsm-title">
-              {step === "pick" ? t("newSession.title") : proto?.label ?? ""}
+              {isEditing
+                ? t("newSession.edit_title")
+                : step === "pick"
+                  ? t("newSession.title")
+                  : proto?.label ?? ""}
             </span>
             <span className="nsm-subtitle">
-              {step === "pick"
+              {step === "pick" && !isEditing
                 ? t("newSession.choose_protocol")
                 : proto?.description ?? ""}
             </span>
@@ -799,9 +887,11 @@ export function NewSessionModal() {
               >
                 {saving
                   ? t("newSession.saving")
-                  : needsHost || isDocker || isK8s
-                    ? t("newSession.save_connect")
-                    : t("newSession.save_session")}
+                  : isEditing
+                    ? t("newSession.save_changes")
+                    : needsHost || isDocker || isK8s
+                      ? t("newSession.save_connect")
+                      : t("newSession.save_session")}
               </button>
             </div>
           </div>

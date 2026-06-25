@@ -484,6 +484,7 @@ export function Sidebar() {
   const { t } = useTranslation();
   const openTab = useAppStore((s) => s.openTab);
   const openNewSessionModal = useAppStore((s) => s.openNewSessionModal);
+  const openEditSession = useAppStore((s) => s.openEditSession);
   const sessionListVersion = useAppStore((s) => s.sessionListVersion);
   const bumpSessionVersion = useAppStore((s) => s.bumpSessionVersion);
   const tabs = useAppStore((s) => s.tabs);
@@ -747,6 +748,7 @@ export function Sidebar() {
 
     const items: CtxItem[] = [
       { kind: "action", label: t("sidebar.open"), onClick: () => openSession(s) },
+      { kind: "action", label: t("sidebar.edit_session"), onClick: () => { setCtx(null); openEditSession(s); } },
       {
         kind: "action",
         label: s.favorite ? t("sidebar.remove_from_favorites") : t("sidebar.add_to_favorites"),
