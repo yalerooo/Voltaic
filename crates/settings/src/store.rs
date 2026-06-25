@@ -201,9 +201,7 @@ impl Store {
     pub fn list_folders(&self) -> Result<Vec<FolderRecord>> {
         let mut stmt = self
             .conn
-            .prepare(
-                "SELECT name, color, parent_id FROM folders ORDER BY name COLLATE NOCASE",
-            )
+            .prepare("SELECT name, color, parent_id FROM folders ORDER BY name COLLATE NOCASE")
             .map_err(map_db)?;
         let rows = stmt
             .query_map([], |row| {
